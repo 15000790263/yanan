@@ -1,0 +1,22 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#1ABC9C" fill-opacity="0.1"/>
+
+  <!-- 眼睛图标 -->
+  <ellipse cx="64" cy="64" rx="40" ry="24" fill="#1ABC9C" fill-opacity="0.3" stroke="#1ABC9C" stroke-width="3"/>
+
+  <!-- 瞳孔 -->
+  <circle cx="64" cy="64" r="12" fill="#1ABC9C"/>
+  <circle cx="64" cy="64" r="6" fill="white"/>
+
+  <!-- 睫毛 -->
+  <path d="M28 56L20 48" stroke="#1ABC9C" stroke-width="3" stroke-linecap="round"/>
+  <path d="M36 48L32 38" stroke="#1ABC9C" stroke-width="3" stroke-linecap="round"/>
+  <path d="M100 56L108 48" stroke="#1ABC9C" stroke-width="3" stroke-linecap="round"/>
+  <path d="M92 48L96 38" stroke="#1ABC9C" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- 监控标记 -->
+  <circle cx="96" cy="32" r="4" fill="#1ABC9C"/>
+  <circle cx="104" cy="40" r="3" fill="#1ABC9C" fill-opacity="0.7"/>
+  <circle cx="108" cy="52" r="2" fill="#1ABC9C" fill-opacity="0.5"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#4A90E2" fill-opacity="0.1"/>
+
+  <!-- 人物图标 -->
+  <circle cx="64" cy="42" r="16" fill="#4A90E2"/>
+  <path d="M32 90C32 73.4313 45.4315 60 62 60H66C82.5685 60 96 73.4313 96 90V96H32V90Z" fill="#4A90E2"/>
+
+  <!-- 巡检路线 -->
+  <path d="M40 100L50 110L64 96L78 112L88 102" stroke="#4A90E2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 位置标记 -->
+  <circle cx="50" cy="110" r="4" fill="#4A90E2"/>
+  <circle cx="64" cy="96" r="4" fill="#4A90E2"/>
+  <circle cx="78" cy="112" r="4" fill="#4A90E2"/>
+</svg>

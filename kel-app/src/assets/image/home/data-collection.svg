@@ -1,0 +1,31 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#27AE60" fill-opacity="0.1"/>
+
+  <!-- 数据库/服务器图标 -->
+  <ellipse cx="40" cy="36" rx="16" ry="6" fill="#27AE60"/>
+  <path d="M24 36V52C24 55.3137 31.1634 58 40 58C48.8366 58 56 55.3137 56 52V36" fill="#27AE60" fill-opacity="0.8"/>
+  <path d="M24 52V68C24 71.3137 31.1634 74 40 74C48.8366 74 56 71.3137 56 68V52" fill="#27AE60" fill-opacity="0.6"/>
+  <ellipse cx="40" cy="68" rx="16" ry="6" fill="#27AE60" fill-opacity="0.4"/>
+
+  <!-- 数据流动线条 -->
+  <path d="M60 42C72 42 80 46 88 50" stroke="#27AE60" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+  <path d="M60 58C72 58 80 62 88 66" stroke="#27AE60" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+
+  <!-- 收集/输入图标 -->
+  <rect x="76" y="32" width="40" height="64" rx="4" fill="#27AE60" fill-opacity="0.2" stroke="#27AE60" stroke-width="3"/>
+
+  <!-- 表单输入框 -->
+  <rect x="84" y="44" width="24" height="8" rx="2" fill="#27AE60"/>
+  <rect x="84" y="58" width="20" height="6" rx="2" fill="#27AE60" fill-opacity="0.7"/>
+  <rect x="84" y="70" width="18" height="6" rx="2" fill="#27AE60" fill-opacity="0.7"/>
+  <rect x="84" y="82" width="22" height="6" rx="2" fill="#27AE60" fill-opacity="0.7"/>
+
+  <!-- 采集箭头 -->
+  <path d="M68 50L74 44L80 50" stroke="#27AE60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M74 44V62" stroke="#27AE60" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- 勾选标记 -->
+  <circle cx="96" cy="104" r="10" fill="#27AE60"/>
+  <path d="M91 104L94 107L101 100" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#3498DB" fill-opacity="0.1"/>
+
+  <!-- 数据库图标 -->
+  <ellipse cx="40" cy="36" rx="20" ry="8" fill="#3498DB"/>
+  <path d="M20 36V56C20 60.4183 28.9543 64 40 64C51.0457 64 60 60.4183 60 56V36" fill="#3498DB" fill-opacity="0.8"/>
+  <path d="M20 56V76C20 80.4183 28.9543 84 40 84C51.0457 84 60 80.4183 60 76V56" fill="#3498DB" fill-opacity="0.6"/>
+
+  <!-- 放大镜 -->
+  <circle cx="82" cy="82" r="24" fill="#3498DB" fill-opacity="0.2" stroke="#3498DB" stroke-width="4"/>
+  <circle cx="82" cy="82" r="16" fill="white" stroke="#3498DB" stroke-width="3"/>
+  <line x1="94" y1="94" x2="108" y2="108" stroke="#3498DB" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- 勾选标记 -->
+  <path d="M74 82L80 88L92 76" stroke="#3498DB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

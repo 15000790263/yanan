@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#E94B3C" fill-opacity="0.1"/>
+
+  <!-- 警告三角形 -->
+  <path d="M64 24L108 96H20L64 24Z" fill="#E94B3C" fill-opacity="0.2" stroke="#E94B3C" stroke-width="3"/>
+
+  <!-- 感叹号 -->
+  <rect x="60" y="44" width="8" height="28" rx="4" fill="#E94B3C"/>
+  <circle cx="64" cy="82" r="4" fill="#E94B3C"/>
+
+  <!-- 事件波纹 -->
+  <path d="M40 100C40 100 48 104 64 104C80 104 88 100 88 100" stroke="#E94B3C" stroke-width="3" stroke-linecap="round"/>
+  <path d="M44 108C44 108 52 112 64 112C76 112 84 108 84 108" stroke="#E94B3C" stroke-width="3" stroke-linecap="round"/>
+</svg>

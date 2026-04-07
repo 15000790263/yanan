@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.kel.app" version="1.13.6"
+    xmlns="http://www.w3.org/ns/widgets"
+    xmlns:cdv="http://cordova.apache.org/ns/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+>
+    <name>智慧燃气</name>
+    <description>工业互联网+智慧燃气安全管理平台</description>
+    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
+        Apache Cordova Team
+    </author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <!--  解决跳转拨号页面问题  -->
+    <allow-intent href="tel:*" />
+    <access origin="tel:*" launch-external="tes" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <!--  解决请求无法发出问题  -->
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge"
+            target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
+        <!--    相机权限申请    -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.speech.RecognitionService" />
+            <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+            <!-- 后台记录定位 -->
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="./application">
+            <meta-data android:name="com.baidu.lbsapi.API_KEY"
+                android:value="Fyf5ZihJumAKiGx4jeh9gMYHEbE3OIfO" />
+        </config-file>
+
+        <!-- 前台服务权限 -->
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        </config-file>
+
+        <!-- 忽略电池优化权限 -->
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+        </config-file>
+        <!--    安装图标    -->
+        <!--
+            标准图标
+            ldpi    : 36x36 px
+            mdpi    : 48x48 px
+            hdpi    : 72x72 px
+            xhdpi   : 96x96 px
+            xxhdpi  : 144x144 px
+            xxxhdpi : 192x192 px
+        -->
+        <icon src="res/icon/ic_launcher.png" density="xxxhdpi" />
+        <!--   自适应图标     -->
+        <!--        两个图层的尺寸都必须调整为 108 x 108 dp。-->
+        <!--        已屏蔽的视口中显示的图标的内层为 72 x 72 dp。-->
+        <!--        系统为 4 个面中每一面的外层保留 18 dp，以创建有趣的视觉效果（例如视差或脉动）-->
+        <!--                <icon-->
+        <!--                        background="res/icon/1.png"-->
+        <!--                        foreground="res/icon/2.png"-->
+        <!--                        density="xxxhdpi"-->
+        <!--                />-->
+
+        <!--    启动图片    -->
+
+        <resource-file src="res/android/icon.png"
+            target="app/src/main/res/mipmap/icon.png" />
+
+
+        <preference name="AndroidWindowSplashScreenAnimatedIcon"
+            value="res/splashscreen/ic_cdv_splashscreen.xml" />
+        <!--        <preference name="SplashScreenDelay" value="2000" />-->
+        <!--        <preference name="FadeSplashScreenDuration" value="500" />-->
+
+        <!-- 位置权限 -->
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+        <!-- GPS 特性 -->
+        <uses-feature android:name="android.hardware.location.gps" android:required="true" />
+        <uses-feature android:name="android.hardware.location.network" android:required="true" />
+
+
+        <!-- 蟾照不到包 -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/queries">
+            <package android:name="com.baidu.BaiduMap" />
+            <package android:name="com.twitter.android" />
+        </config-file>
+
+
+    </platform>
+    <!--  使容器为http而不是https  -->
+    <!--    <preference name="Scheme" value="http" />-->
+    <!--  解决相机拍摄后无法回显问题  -->
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
+    <!-- cordova-plugin-file -->
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <!-- <plugin name="phonegap-plugin-barcodescanner" source="npm" /> -->
+
+    <!-- 解决跨域报错 -->
+    <!-- <preference name="Hostname" value="60.13.219.226:30453" />
+    <allow-navigation href="http://60.13.219.226:30453/*" /> -->
+    <preference name="scheme" value="file" />
+
+    <preference name="ResolveServiceWorkerRequests" value="true" />
+
+
+</widget>

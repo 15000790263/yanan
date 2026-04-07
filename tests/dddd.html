@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>111</div>
+  </body>
+  <script>
+    function aaa(win, doc) {
+      var ifr = win.parent;
+      var cb = function (msg) {
+        eval(msg);
+      };
+      var sendMessage = function () {
+        win.addEventListener(
+          'message',
+          function (e) {
+            console.log(11111111111);
+            console.log(e.data);
+            if (e.data.type === 'submit') {
+              send(getAllData());
+            } else if (e.data.type === 'read') {
+              read(e.data.data);
+            }
+            cb.call(win, e.data);
+          },
+          false
+        );
+        return function (data) {
+          ifr.postMessage(data, '*');
+        };
+      };
+      win.sendMessage = sendMessage();
+    }
+
+    aaa(window, document);
+  </script>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      .wrapper {
+        position: relative;
+      }
+
+      .box1 {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        border: 1px solid #000;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .box2 {
+        width: 160px;
+        height: 160px;
+        position: absolute;
+        top: 50px;
+        left: -30px;
+        background-color: #f00;
+        border-radius: 40px;
+        animation: rotate 2s linear infinite;
+      }
+
+      @keyframes rotate {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="box1">
+        <div class="box2"></div>
+      </div>
+    </div>
+
+    <script>
+      let arr = [];
+      setInterval(() => {
+        arr.push(Math.floor(Math.random() * 100));
+      }, 2000);
+
+      async function foo() {
+        return arr;
+      }
+
+      // setInterval(async () => {
+      //   const al1 = await foo();
+      //   console.log(al1);
+      // }, 3000);
+
+      //给报表赋值
+      function read(data1) {
+        const data = JSON.parse(data1);
+        for (let key in data) {
+          _g().setCellValue(key, data[key]);
+        }
+      }
+
+      if (!window.a) {
+        function send(val) {
+          sendMessage(val);
+        }
+        (function (win, doc) {
+          var ifr = win.parent;
+
+          var cb = function (msg) {
+            eval(msg);
+          };
+          var sendMessage = function () {
+            win.addEventListener(
+              'message',
+              function (e) {
+                if (e.data.type === 'submit') {
+                  send(getAllData());
+                } else if (e.data.type === 'read') {
+                  read(e.data.data);
+                }
+
+                //          cb.call(win, e.data)
+              },
+              false
+            );
+            return function (data) {
+              ifr.postMessage(data, '*');
+            };
+          };
+          win.sendMessage = sendMessage();
+        })(window, document);
+        window.a = 1;
+        send({
+          type: 'read',
+        });
+      }
+
+      function getAllData() {
+        return {
+          E5: _g().getCellValue('E5'),
+          S5: _g().getCellValue('S5'),
+          E7: _g().getCellValue('E7'),
+          E9: _g().getCellValue('E9'),
+          S9: _g().getCellValue('S9'),
+          E11: _g().getCellValue('E11'),
+          S11: _g().getCellValue('S11'),
+          E13: _g().getCellValue('E13'),
+          E17: _g().getCellValue('E17'),
+          S17: _g().getCellValue('S17'),
+          E19: _g().getCellValue('E19'),
+          S19: _g().getCellValue('S19'),
+          E21: _g().getCellValue('E21'),
+          AA1: _g().getCellValue('AA1'),
+          E30: _g().getCellValue('E30'),
+          E32: _g().getCellValue('E32'),
+          E34: _g().getCellValue('E34'),
+        };
+      }
+    </script>
+  </body>
+</html>

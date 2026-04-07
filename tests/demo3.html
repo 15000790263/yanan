@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .wrapper {
+        transform-style: preserve-3d;
+        transform: rotateX(80deg);
+      }
+
+      .cube {
+        width: 600px;
+        height: 600px;
+        /* background-color: rgb(255, 119, 0); */
+        /* perspective: 800px; */
+        transform-style: preserve-3d;
+        margin: 500px auto 0;
+        animation: rotate 3s infinite linear;
+        /* transition: all 3s; */
+        /* perspective-origin: center -500px; */
+      }
+
+      /* .cube:hover {
+        transform: rotateY(360deg);
+      } */
+
+      @keyframes rotate {
+        0% {
+          transform: rotateZ(0);
+        }
+        100% {
+          transform: rotateZ(360deg);
+        }
+      }
+
+      .inner {
+        width: 200px;
+        height: 300px;
+        position: absolute;
+        transform-origin: 300px 300px;
+        transform-style: preserve-3d;
+      }
+      .box1 {
+        /* background-color: #b0a; */
+        transform: rotateZ(72deg) rotateX(-90deg);
+      }
+      .box2 {
+        /* background-color: #00f; */
+        transform: rotateZ(144deg) rotateX(-90deg);
+      }
+      .box3 {
+        /* background-color: #f00; */
+        transform: rotateZ(216deg) rotateX(-90deg);
+      }
+      .box4 {
+        /* background-color: #ff0; */
+        transform: rotateZ(288deg) rotateX(-90deg);
+      }
+      .box5 {
+        /* background-color: #0ff; */
+        transform: rotateZ(360deg) rotateX(-90deg);
+      }
+
+      .boxc {
+        width: 100%;
+        height: 100%;
+        background-color: rgb(255, 0, 200);
+        transform: rotateY(90deg);
+        opacity: 0.5;
+      }
+
+      .box1 .boxc {
+        background-color: #b0a;
+      }
+      .box2 .boxc {
+        background-color: #00f;
+      }
+      .box3 .boxc {
+        background-color: #f00;
+      }
+      .box4 .boxc {
+        background-color: #ff0;
+      }
+      .box5 .boxc {
+        background-color: #0ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="cube">
+        <div class="box1 inner">
+          <div class="boxc"></div>
+        </div>
+        <div class="box2 inner">
+          <div class="boxc"></div>
+        </div>
+        <div class="box3 inner">
+          <div class="boxc"></div>
+        </div>
+        <div class="box4 inner">
+          <div class="boxc"></div>
+        </div>
+        <div class="box5 inner">
+          <div class="boxc"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

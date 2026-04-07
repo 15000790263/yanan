@@ -1,0 +1,31 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="56" fill="#5DADE2" fill-opacity="0.1"/>
+
+  <!-- 地图底图 -->
+  <rect x="24" y="24" width="80" height="80" rx="4" fill="#5DADE2" fill-opacity="0.2" stroke="#5DADE2" stroke-width="3"/>
+
+  <!-- 地图网格线 -->
+  <line x1="44" y1="24" x2="44" y2="104" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+  <line x1="64" y1="24" x2="64" y2="104" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+  <line x1="84" y1="24" x2="84" y2="104" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+  <line x1="24" y1="44" x2="104" y2="44" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+  <line x1="24" y1="64" x2="104" y2="64" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+  <line x1="24" y1="84" x2="104" y2="84" stroke="#5DADE2" stroke-width="1" stroke-opacity="0.3"/>
+
+  <!-- 管道路线 -->
+  <path d="M32 88Q48 72 64 80T96 56" stroke="#E74C3C" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M40 96Q56 80 72 88T104 64" stroke="#3498DB" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- 巡检点标记 -->
+  <circle cx="48" cy="76" r="6" fill="#E74C3C" stroke="white" stroke-width="2"/>
+  <circle cx="64" cy="80" r="6" fill="#E74C3C" stroke="white" stroke-width="2"/>
+  <circle cx="80" cy="68" r="6" fill="#E74C3C" stroke="white" stroke-width="2"/>
+  <circle cx="56" cy="88" r="6" fill="#3498DB" stroke="white" stroke-width="2"/>
+  <circle cx="72" cy="84" r="6" fill="#3498DB" stroke="white" stroke-width="2"/>
+  <circle cx="88" cy="68" r="6" fill="#3498DB" stroke="white" stroke-width="2"/>
+
+  <!-- 位置图标 -->
+  <circle cx="96" cy="48" r="8" fill="#F39C12" stroke="white" stroke-width="2"/>
+  <path d="M96 44V52M92 48H100" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
