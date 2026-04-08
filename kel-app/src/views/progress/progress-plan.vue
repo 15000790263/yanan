@@ -239,6 +239,7 @@ function onLoad() {
 function onRefresh() {
   pageNum.value = 1;
   finished.value = false;
+  loading.value = true;
   fetchList();
 }
 
