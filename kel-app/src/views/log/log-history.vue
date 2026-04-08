@@ -227,7 +227,12 @@
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast } from 'vant';
-import { getLogList, getLogDetail, updateConstructionLog } from '@/api/construction-log';
+import {
+  getLogList,
+  getLogDetail,
+  updateConstructionLog,
+  getLogStats,
+} from '@/api/construction-log';
 import { getFileInfo, getUserPermissionsInfo } from '@/api/system';
 import dayjs from 'dayjs';
 
@@ -238,12 +243,12 @@ defineOptions({
 // 路由
 const router = useRouter();
 
-// 统计（写死）
+// 统计
 const stats = reactive({
-  all: 10,
-  pending: 2,
-  waiting: 3,
-  approved: 3,
+  all: 0,
+  pending: 0,
+  waiting: 0,
+  approved: 0,
 });
 
 // 状态
@@ -277,6 +282,24 @@ const showAuditPopup = ref(false);
 const auditAction = ref(''); // 'pass' 或 'reject'
 const auditComment = ref('');
 const auditing = ref(false);
+
+// 获取统计
+async function fetchStats() {
+  try {
+    const { data: res } = await getLogStats();
+    if (res.code === 200 && res.data) {
+      const d = res.data;
+      stats.all = d.total || 0;
+      stats.pending = d.status0 || 0;
+      stats.waiting = d.status1 || 0;
+      stats.approved = d.status2 || 0;
+    }
+  } catch (error) {
+    // ignore
+  }
+}
+
+fetchStats();
 
 // 审核通过
 function handleAuditPass() {
@@ -395,7 +418,7 @@ async function fetchList() {
       }
 
       // 替换 recorder 为昵称
-      newList.forEach(item => {
+      logList.value.forEach(item => {
         if (item.recorder && userNameMap[item.recorder]) {
           item.recorder = userNameMap[item.recorder];
         }

@@ -26,6 +26,14 @@ export const getLogDetail = (id) => {
 };
 
 /**
+ * 获取施工日志统计：各状态数量及总数量
+ * @returns {Promise}
+ */
+export const getLogStats = () => {
+  return service.get(`${config.url}/business/constructionLog/stats`);
+};
+
+/**
  * 保存施工日志
  * @param {Object} data - 施工日志数据
  * @returns {Promise}
@@ -80,25 +88,14 @@ export const deleteConstructionTomorrow = (ids) => {
 };
 
 /**
- * 获取标段列表
- * @param {string} projectCode - 项目编码
- * @returns {Promise}
- */
-export const getSections = (projectCode) => {
-  return service.get(`${config.url}/business/schedule/sections`, {
-    params: { projectCode }
-  });
-};
-
-/**
  * 获取工序树
  * @param {string} projectCode - 项目编码
- * @param {string} section - 标段
+ * @param {string} deptId - 部门ID
  * @param {string} currentDate - 当前日期
  * @returns {Promise}
  */
-export const getProcessTree = (projectCode, section, currentDate) => {
+export const getProcessTree = (projectCode, deptId, currentDate) => {
   return service.get(`${config.url}/business/schedule/processTree`, {
-    params: { projectCode, section, currentDate }
+    params: { projectCode, deptId, currentDate }
   });
 };

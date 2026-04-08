@@ -142,19 +142,19 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { showToast } from 'vant';
-import { getScheduleList, getScheduleDetail } from '@/api/schedule';
+import { getScheduleList, getScheduleDetail, getScheduleStats } from '@/api/schedule';
 import { getFileInfo } from '@/api/system';
 
 defineOptions({
   name: 'ProgressPlan',
 });
 
-// 统计（写死）
+// 统计
 const stats = reactive({
-  all: 6,
-  pending: 1,
-  inProgress: 2,
-  completed: 3,
+  all: 0,
+  pending: 0,
+  inProgress: 0,
+  completed: 0,
 });
 
 // 状态
@@ -174,6 +174,24 @@ const pageSize = 10;
 const showDetail = ref(false);
 const detailData = ref(null);
 const attachmentUrls = ref([]);
+
+// 获取统计
+async function fetchStats() {
+  try {
+    const { data: res } = await getScheduleStats();
+    if (res.code === 200 && res.data) {
+      const d = res.data;
+      stats.all = d.total || 0;
+      stats.pending = d.status0 || 0;
+      stats.inProgress = d.status1 || 0;
+      stats.completed = d.status2 || 0;
+    }
+  } catch (error) {
+    // ignore
+  }
+}
+
+fetchStats();
 
 // 获取列表
 async function fetchList() {

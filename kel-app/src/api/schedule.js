@@ -24,3 +24,11 @@ export const getScheduleList = (query) => {
 export const getScheduleDetail = (id) => {
   return service.get(`${config.url}/business/schedule/${id}`);
 };
+
+/**
+ * 获取进度计划统计：各状态数量及总数量
+ * @returns {Promise}
+ */
+export const getScheduleStats = () => {
+  return service.get(`${config.url}/business/schedule/stats`);
+};

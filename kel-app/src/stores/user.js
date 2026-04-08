@@ -16,6 +16,7 @@ const useUserStore = defineStore('user', {
     name: '',
     nickName: '',
     deptName: '',
+    deptId: '',
     userId: '',
     avatar: '',
     roles: [],
@@ -52,6 +53,7 @@ const useUserStore = defineStore('user', {
             this.avatar = user.avatar;
             this.phonenumber = user.phonenumber;
             this.email = user.email;
+            this.deptId = user.dept.deptId;
             resolve(res.data);
           })
           .catch(error => {

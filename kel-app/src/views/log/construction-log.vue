@@ -29,11 +29,7 @@
           <van-field
             v-model="logData.section"
             label="标段"
-            placeholder="请选择"
-            is-link
             readonly
-            clickable
-            @click="handleSelectSection"
           />
           <van-field
             v-model="logData.onsiteLeader"
@@ -131,15 +127,6 @@
       />
     </van-popup>
 
-    <!-- 标段选择弹窗 -->
-    <van-popup v-model:show="showSectionPicker" position="bottom" round>
-      <van-picker
-        :columns="sectionList"
-        @confirm="({ selectedOptions }) => handleSectionConfirm(selectedOptions[0].text)"
-        @cancel="showSectionPicker = false"
-      />
-    </van-popup>
-
     <!-- 明日计划 -->
     <div class="plan-section">
       <div class="section-title">
@@ -219,7 +206,6 @@ import {
   saveConstructionLog,
   saveConstructionToday,
   saveConstructionTomorrow,
-  getSections,
   getProcessTree,
   getLogDetail,
   updateConstructionLog,
@@ -326,7 +312,7 @@ watch(
     if (value[0]?.value) {
       logData.projectName = value[0].label;
       logData.projectCode = value[0].value;
-      fetchSections(value[0].value);
+      fetchProcessTree();
     }
   },
   {
@@ -335,42 +321,14 @@ watch(
   }
 );
 
-// 标段选择相关
-const showSectionPicker = ref(false);
-const sectionList = ref([]);
 // 提交中状态
 const submitting = ref(false);
 
-async function fetchSections(projectCode) {
-  try {
-    const { data: res } = await getSections(projectCode);
-    if (res.code === 200) {
-      // 将字符串数组转换为 picker 可用格式
-      sectionList.value = (res.data || []).map(item => ({ text: item, value: item }));
-    }
-  } catch (error) {
-    // 静默处理错误
-  }
-}
-
-function handleSelectSection() {
-  if (sectionList.value.length > 0) {
-    showSectionPicker.value = true;
-  }
-}
-
-async function handleSectionConfirm(section) {
-  logData.section = section;
-  showSectionPicker.value = false;
-  // 获取工序树
-  await fetchProcessTree(section);
-}
-
-async function fetchProcessTree(section) {
+async function fetchProcessTree() {
   try {
     const { data: res } = await getProcessTree(
       logData.projectCode,
-      section,
+      userStore.deptId,
       dayjs().format('YYYY-MM-DD')
     );
     if (res.code === 200 && res.data) {
@@ -402,6 +360,7 @@ function transformProcessTree(data, level = 0) {
 onMounted(async () => {
   logData.logDate = new Date().toISOString().slice(0, 10);
   logData.logNo = 'LOG' + Date.now();
+  logData.section = userStore.deptName;
   fetchWeather();
 
   // 编辑模式 - 加载已有日志数据
@@ -426,12 +385,9 @@ async function loadLogData(id) {
       logData.logDate = log.logDate;
       logData.status = log.status;
 
-      // 获取标段列表和工序树
+      // 获取工序树
       if (log.projectCode) {
-        await fetchSections(log.projectCode);
-      }
-      if (log.section) {
-        await fetchProcessTree(log.section);
+        await fetchProcessTree();
       }
 
       // 今日施工内容
