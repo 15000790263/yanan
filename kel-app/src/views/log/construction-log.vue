@@ -26,11 +26,7 @@
             placeholder="请选择进度计划"
             readonly
           />
-          <van-field
-            v-model="logData.section"
-            label="标段"
-            readonly
-          />
+          <van-field v-model="logData.section" label="标段" readonly />
           <van-field
             v-model="logData.onsiteLeader"
             label="现场负责人"
@@ -57,15 +53,27 @@
         <div v-else class="process-list">
           <div v-for="(process, index) in logData.processes" :key="index" class="process-item">
             <van-icon name="cross" class="delete-icon" @click="handleDeleteProcess(index)" />
-            <van-field
-              v-model="process.processNo"
-              label="工序"
-              placeholder="请选择工序"
-              is-link
-              readonly
-              clickable
-              @click="handleSelectProcess(index)"
-            />
+            <div class="process-display" @click="handleSelectProcess(index)">
+              <div class="process-label">工序</div>
+              <div class="process-value">
+                <div class="process-row1">
+                  {{
+                    process.level1Process && process.level2Process
+                      ? `${process.level1Process} / ${process.level2Process}`
+                      : process.processNo || '请选择工序'
+                  }}
+                </div>
+                <div v-if="process.level3Process" class="process-row2">
+                  <span>
+                    {{ process.level3Process }}
+                  </span>
+                  <span>
+                    {{ process.completionRate ? `(完成进度 ${process.completionRate}%)` : '' }}
+                  </span>
+                </div>
+              </div>
+              <van-icon name="arrow" class="process-arrow" />
+            </div>
             <van-field
               v-model="process.todayContent"
               label="完成内容"
@@ -144,15 +152,20 @@
         <div v-else class="process-list">
           <div v-for="(plan, index) in logData.plans" :key="index" class="process-item">
             <van-icon name="cross" class="delete-icon" @click="handleDeletePlan(index)" />
-            <van-field
-              v-model="plan.processName"
-              label="工序"
-              placeholder="请选择工序"
-              is-link
-              readonly
-              clickable
-              @click="handleSelectPlanProcess(index)"
-            />
+            <div class="process-display" @click="handleSelectPlanProcess(index)">
+              <div class="process-label">工序</div>
+              <div class="process-value">
+                <div class="process-row1">
+                  {{
+                    plan.level1Process && plan.level2Process
+                      ? `${plan.level1Process} / ${plan.level2Process}`
+                      : plan.processName || '请选择工序'
+                  }}
+                </div>
+                <div v-if="plan.level3Process" class="process-row2">{{ plan.level3Process }}</div>
+              </div>
+              <van-icon name="arrow" class="process-arrow" />
+            </div>
             <van-field
               v-model="plan.content"
               label="明日计划"
@@ -290,6 +303,7 @@ const logData = reactive({
       level1Process: '',
       level2Process: '',
       level3Process: '',
+      completionRate: '',
       todayContent: '',
       cumulativeProgress: '',
       problems: '',
@@ -300,6 +314,10 @@ const logData = reactive({
   plans: [
     {
       processName: '',
+      level1Process: '',
+      level2Process: '',
+      level3Process: '',
+      completionRate: '',
       content: '',
       progress: '',
     },
@@ -345,6 +363,7 @@ function transformProcessTree(data, level = 0) {
     const o = {
       text: item.name,
       value: item.name,
+      completionRate: item.completionRate ?? 0,
       children: item.children ? transformProcessTree(item.children, level) : [],
     };
 
@@ -423,6 +442,7 @@ async function loadLogData(id) {
             level1Process: p.level1Process,
             level2Process: p.level2Process,
             level3Process: p.level3Process,
+            completionRate: p.completionRate || '',
             todayContent: p.todayContent,
             cumulativeProgress: p.cumulativeProgress,
             problems: p.problems || '',
@@ -438,6 +458,7 @@ async function loadLogData(id) {
           level1Process: '',
           level2Process: '',
           level3Process: '',
+          completionRate: '',
           todayContent: '',
           cumulativeProgress: '',
           problems: '',
@@ -453,13 +474,18 @@ async function loadLogData(id) {
         processNo: p.processNo,
         level1Process: p.level1Process,
         level2Process: p.level2Process,
+        level3Process: p.level3Process,
+        completionRate: p.completionRate || '',
         content: p.tomorrowPlan,
         progress: p.plannedProgress,
       }));
       if (logData.plans.length === 0) {
         logData.plans.push({
           processName: '',
-          processNo: '',
+          level1Process: '',
+          level2Process: '',
+          level3Process: '',
+          completionRate: '',
           content: '',
           progress: '',
         });
@@ -519,6 +545,7 @@ function handleAddProcess() {
     level1Process: '',
     level2Process: '',
     level3Process: '',
+    completionRate: '',
     todayContent: '',
     cumulativeProgress: '',
     problems: '',
@@ -551,6 +578,8 @@ function handleAddPlan() {
     processNo: '',
     level1Process: '',
     level2Process: '',
+    level3Process: '',
+    completionRate: '',
     content: '',
     progress: '',
   });
@@ -578,12 +607,20 @@ function handleProcessCascaderFinish({ selectedOptions }) {
   const list = isTomorrow ? logData.plans : logData.processes;
   const item = list[index];
 
+  console.log('Selected options:', selectedOptions);
+
+  // 获取完成率（从 value 对象中取）
+  const completionRate = selectedOptions[2]?.completionRate ?? 0;
+
+  console.log(completionRate);
+
   if (item && selectedOptions.length >= 3) {
     if (isTomorrow) {
       // 明日计划
       item.level1Process = selectedOptions[0].text;
       item.level2Process = selectedOptions[1].text;
       item.level3Process = selectedOptions[2].text;
+      item.completionRate = completionRate;
       item.processName = selectedOptions.map(opt => opt.text).join(' / ');
       item.processNo = selectedOptions.map(opt => opt.text).join(' / ');
     } else {
@@ -591,6 +628,7 @@ function handleProcessCascaderFinish({ selectedOptions }) {
       item.level1Process = selectedOptions[0].text;
       item.level2Process = selectedOptions[1].text;
       item.level3Process = selectedOptions[2].text;
+      item.completionRate = completionRate;
       item.processNo = selectedOptions.map(opt => opt.text).join(' / ');
     }
   } else if (item && selectedOptions.length === 2) {
@@ -904,6 +942,43 @@ async function handleSubmit() {
         }
       }
 
+      .process-display {
+        display: flex;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #ebedf0;
+        cursor: pointer;
+
+        .process-label {
+          font-size: 14px;
+          color: #646566;
+          min-width: 70px;
+        }
+
+        .process-value {
+          flex: 1;
+          padding-right: 20px;
+
+          .process-row1 {
+            font-size: 14px;
+            color: #323233;
+          }
+
+          .process-row2 {
+            font-size: 14px;
+            color: #323233;
+            font-weight: 600;
+            margin-top: 4px;
+          }
+        }
+
+        .process-arrow {
+          color: #969799;
+          font-size: 14px;
+          margin-top: 4px;
+        }
+      }
+
       :deep(.van-cell) {
         background: transparent;
         padding: 12px 0;
@@ -953,6 +1028,43 @@ async function handleSubmit() {
 
         &:hover {
           color: #f56c6c;
+        }
+      }
+
+      .process-display {
+        display: flex;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #ebedf0;
+        cursor: pointer;
+
+        .process-label {
+          font-size: 14px;
+          color: #646566;
+          min-width: 70px;
+        }
+
+        .process-value {
+          flex: 1;
+          padding-right: 20px;
+
+          .process-row1 {
+            font-size: 14px;
+            color: #323233;
+          }
+
+          .process-row2 {
+            font-size: 14px;
+            color: #323233;
+            font-weight: 600;
+            margin-top: 4px;
+          }
+        }
+
+        .process-arrow {
+          color: #969799;
+          font-size: 14px;
+          margin-top: 4px;
         }
       }
 
