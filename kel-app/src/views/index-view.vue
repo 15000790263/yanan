@@ -116,7 +116,7 @@ function returnBack() {
 }
 
 :deep(.van-tabbar) {
-  top: calc(100vh - 50px) !important;
+  // top: calc(100vh - 50px) !important;
   bottom: unset !important;
   left: 0 !important;
   width: 100vw !important;

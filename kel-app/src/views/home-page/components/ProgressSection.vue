@@ -1,9 +1,17 @@
 <script setup>
+import { Progress } from 'vant';
+import 'vant/lib/progress/style';
+
 // 图片资源路径
 const progressTitleIcon = new URL('@/assets/image/home/smart-title-icon.png', import.meta.url).href;
-const progressBar1 = new URL('@/assets/image/home/progress-bar-1.png', import.meta.url).href;
-const progressBar2 = new URL('@/assets/image/home/progress-bar-2.png', import.meta.url).href;
-const progressBar3 = new URL('@/assets/image/home/progress-bar-3.png', import.meta.url).href;
+
+// 标段进度数据
+const mainProgress = 17;
+const subSections = [
+  { name: '一标段', progress: 21, color: 'linear-gradient(90deg, #2C5DFF 0%, #3BE5FF 102%)' },
+  { name: '二标段', progress: 15, color: 'linear-gradient(270deg, #FF3731 0%, #FF6D3D 100%)' },
+  { name: '三标段', progress: 12, color: 'linear-gradient(90deg, #FFF531 0%, #FFA83D 99%)' },
+];
 </script>
 
 <template>
@@ -18,13 +26,20 @@ const progressBar3 = new URL('@/assets/image/home/progress-bar-3.png', import.me
 
       <!-- Main progress bar with label -->
       <div class="main-progress-area">
-        <span class="pct-label">17%</span>
+        <span class="pct-label">{{ mainProgress }}%</span>
         <div class="main-bar-row">
           <div class="bar-label-pill">
             <span class="pill-text">施工进度</span>
           </div>
           <div class="main-bar-track">
-            <div class="main-bar-fill"></div>
+            <van-progress
+              class="w-full"
+              :percentage="mainProgress"
+              :stroke-width="12"
+              :show-pivot="false"
+              color="linear-gradient(90deg, #2c99ff, #6cff3b)"
+              track-color="#e8eaec"
+            />
           </div>
         </div>
       </div>
@@ -32,28 +47,48 @@ const progressBar3 = new URL('@/assets/image/home/progress-bar-3.png', import.me
       <!-- Sub progress rows -->
       <div class="sub-rows">
         <div class="sub-row">
-          <img :src="progressBar1" alt="" class="sub-bar-img" />
-          <span class="sub-label">一标段</span>
+          <span class="sub-label">{{ subSections[0].name }}</span>
           <div class="sub-track">
-            <img :src="progressBar1" alt="" class="bar-progress-img" />
+            <van-progress
+              class="w-full"
+              :percentage="subSections[0].progress"
+              :stroke-width="12"
+              :show-pivot="false"
+              :color="subSections[0].color"
+              track-color="#e8eaec"
+            />
           </div>
-          <span class="sub-pct">21%</span>
+          <span class="sub-pct">{{ subSections[0].progress }}%</span>
         </div>
 
         <div class="sub-row">
-          <span class="sub-label">二标段</span>
+          <span class="sub-label">{{ subSections[1].name }}</span>
           <div class="sub-track">
-            <img :src="progressBar2" alt="" class="bar-progress-img" />
+            <van-progress
+              class="w-full"
+              :percentage="subSections[1].progress"
+              :stroke-width="12"
+              :show-pivot="false"
+              :color="subSections[1].color"
+              track-color="#e8eaec"
+            />
           </div>
-          <span class="sub-pct">15%</span>
+          <span class="sub-pct">{{ subSections[1].progress }}%</span>
         </div>
 
         <div class="sub-row">
-          <span class="sub-label">三标段</span>
+          <span class="sub-label">{{ subSections[2].name }}</span>
           <div class="sub-track">
-            <img :src="progressBar3" alt="" class="bar-progress-img" />
+            <van-progress
+              class="w-full"
+              :percentage="subSections[2].progress"
+              :stroke-width="12"
+              :show-pivot="false"
+              :color="subSections[2].color"
+              track-color="#e8eaec"
+            />
           </div>
-          <span class="sub-pct">12%</span>
+          <span class="sub-pct">{{ subSections[2].progress }}%</span>
         </div>
       </div>
     </div>

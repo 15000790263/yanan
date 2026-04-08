@@ -41,6 +41,9 @@ export const updateUser = data => {
 // 修改密码
 export const resetPwd = data => service.put(`${config.url}/system/user/resetPwd`, data);
 
+// 修改密码（用户自己修改）
+export const updatePwd = data => service.put(`${config.url}/system/user/profile/updatePwd`, data);
+
 // 修改用户信息
 export const updateUserInfo = async data => {
   const res = await getUserPermissionsInfo(data.id);

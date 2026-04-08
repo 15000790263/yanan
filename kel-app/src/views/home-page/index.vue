@@ -35,10 +35,13 @@ import BottomNav from './components/BottomNav.vue';
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .content-bg {
   padding-bottom: 12px;
   background: #ecf3f7;
+  flex: 1;
 }
 .sections-rail {
   width: 100%;

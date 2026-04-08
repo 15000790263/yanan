@@ -81,16 +81,70 @@
         </div>
       </div>
     </van-popup>
+
+    <!-- 修改密码弹窗 -->
+    <van-popup
+      v-model:show="showPasswordDialog"
+      position="bottom"
+      :style="{ width: '100%', height: 'auto' }"
+      round
+    >
+      <div class="password-dialog">
+        <div class="dialog-header">
+          <span class="dialog-title">修改密码</span>
+          <van-icon name="cross" class="close-icon" @click="showPasswordDialog = false" />
+        </div>
+        <div class="dialog-content">
+          <div class="form-item">
+            <div class="form-label">旧密码</div>
+            <van-field
+              v-model="passwordForm.oldPassword"
+              type="password"
+              placeholder="请输入旧密码"
+              :border="false"
+            />
+          </div>
+          <div class="form-item">
+            <div class="form-label">新密码</div>
+            <van-field
+              v-model="passwordForm.newPassword"
+              type="password"
+              placeholder="请输入新密码（至少6位）"
+              :border="false"
+            />
+          </div>
+          <div class="form-item">
+            <div class="form-label">确认新密码</div>
+            <van-field
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              placeholder="请再次输入新密码"
+              :border="false"
+            />
+          </div>
+          <van-button
+            type="primary"
+            round
+            block
+            :loading="passwordLoading"
+            @click="handleSubmitPassword"
+          >
+            确认修改
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { showConfirmDialog, showToast } from 'vant';
+import { showConfirmDialog, showToast, showLoadingToast, closeToast } from 'vant';
 import { clearToken } from '@/utils/session';
 import { storeToRefs } from 'pinia';
 import useUserStore from '@/stores/user';
+import { updatePwd } from '@/api/system';
 
 defineOptions({
   name: 'MineView',
@@ -114,6 +168,70 @@ const email = computed(() => userStore.email || '');
 // 弹窗状态
 const showProfile = ref(false);
 const showSecurity = ref(false);
+const showPasswordDialog = ref(false);
+
+// 修改密码表单数据
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+});
+const passwordLoading = ref(false);
+
+/** 打开修改密码弹窗 */
+function handleChangePassword() {
+  passwordForm.value = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  };
+  showPasswordDialog.value = true;
+}
+
+/** 提交修改密码 */
+async function handleSubmitPassword() {
+  const { oldPassword, newPassword, confirmPassword } = passwordForm.value;
+
+  // 校验旧密码
+  if (!oldPassword) {
+    showToast('请输入旧密码');
+    return;
+  }
+
+  // 校验新密码
+  if (!newPassword) {
+    showToast('请输入新密码');
+    return;
+  }
+  if (newPassword.length < 6) {
+    showToast('新密码长度不能少于6位');
+    return;
+  }
+
+  // 校验确认密码
+  if (!confirmPassword) {
+    showToast('请再次输入新密码');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showToast('两次输入的新密码不一致');
+    return;
+  }
+
+  passwordLoading.value = true;
+  try {
+    await updatePwd({
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    });
+    showToast('密码修改成功');
+    showPasswordDialog.value = false;
+  } catch (error) {
+    console.error('修改密码失败:', error);
+  } finally {
+    passwordLoading.value = false;
+  }
+}
 
 /** 跳转到个人资料 */
 function handleGoProfile() {
@@ -123,11 +241,6 @@ function handleGoProfile() {
 /** 跳转到账号安全 */
 function handleGoSecurity() {
   showSecurity.value = true;
-}
-
-/** 修改密码 */
-function handleChangePassword() {
-  showToast('修改密码功能开发中');
 }
 
 /** 修改手机号 */
@@ -279,6 +392,55 @@ function handleLogout() {
       margin-right: 8px;
       font-size: 18px;
       color: #2c5282;
+    }
+  }
+}
+
+// 修改密码弹窗
+.password-dialog {
+  padding: 20px 20px 30px;
+  background: #fff;
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .close-icon {
+      font-size: 20px;
+      color: #999;
+      padding: 4px;
+    }
+  }
+
+  .dialog-content {
+    .form-item {
+      margin-bottom: 16px;
+
+      .form-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      :deep(.van-field) {
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 12px 16px;
+
+        .van-field__body {
+          input::placeholder {
+            color: #bfbfbf;
+          }
+        }
+      }
     }
   }
 }
