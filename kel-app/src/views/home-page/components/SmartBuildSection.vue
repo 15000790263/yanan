@@ -13,7 +13,7 @@ const iconTongzhi = new URL('@/assets/image/home/icon-tongzhi.png', import.meta.
 const menuItems = [
   { icon: iconJihua, label: '进度计划', url: '/progress/plan' },
   { icon: iconRizhi, label: '施工日志', url: '/log/entry' },
-  { icon: iconBaoshen, label: '资料报审' },
+  { icon: iconBaoshen, label: '资料报审', url: '/log/index' },
   { icon: iconBaoyan, label: '物资报验' },
   { icon: iconZhiliang, label: '质量监督' },
   { icon: iconAnquan, label: '安全监督' },

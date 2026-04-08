@@ -6,13 +6,13 @@ import config from '../config';
  * @param {Object} query - 查询参数
  * @returns {Promise}
  */
-export const getLogList = (query) => {
+export const getLogList = query => {
   return service.get(`${config.url}/business/constructionLog/list`, {
     params: {
       pageNum: 1,
       pageSize: 10,
-      ...query
-    }
+      ...query,
+    },
   });
 };
 
@@ -21,7 +21,7 @@ export const getLogList = (query) => {
  * @param {number} id - 日志ID
  * @returns {Promise}
  */
-export const getLogDetail = (id) => {
+export const getLogDetail = id => {
   return service.get(`${config.url}/business/constructionLog/detail/${id}`);
 };
 
@@ -38,7 +38,7 @@ export const getLogStats = () => {
  * @param {Object} data - 施工日志数据
  * @returns {Promise}
  */
-export const saveConstructionLog = (data) => {
+export const saveConstructionLog = data => {
   return service.post(`${config.url}/business/constructionLog`, data);
 };
 
@@ -47,7 +47,7 @@ export const saveConstructionLog = (data) => {
  * @param {Array} data - 今日施工内容数组
  * @returns {Promise}
  */
-export const saveConstructionToday = (data) => {
+export const saveConstructionToday = data => {
   return service.post(`${config.url}/business/constructionToday/batch`, data);
 };
 
@@ -56,7 +56,7 @@ export const saveConstructionToday = (data) => {
  * @param {Array} data - 明日施工计划数组
  * @returns {Promise}
  */
-export const saveConstructionTomorrow = (data) => {
+export const saveConstructionTomorrow = data => {
   return service.post(`${config.url}/business/constructionTomorrow/batch`, data);
 };
 
@@ -65,7 +65,7 @@ export const saveConstructionTomorrow = (data) => {
  * @param {Object} data - 施工日志数据
  * @returns {Promise}
  */
-export const updateConstructionLog = (data) => {
+export const updateConstructionLog = data => {
   return service.put(`${config.url}/business/constructionLog`, data);
 };
 
@@ -74,7 +74,7 @@ export const updateConstructionLog = (data) => {
  * @param {string} ids - 逗号分隔的ID列表
  * @returns {Promise}
  */
-export const deleteConstructionToday = (ids) => {
+export const deleteConstructionToday = ids => {
   return service.delete(`${config.url}/business/constructionToday/${ids}`);
 };
 
@@ -83,7 +83,7 @@ export const deleteConstructionToday = (ids) => {
  * @param {string} ids - 逗号分隔的ID列表
  * @returns {Promise}
  */
-export const deleteConstructionTomorrow = (ids) => {
+export const deleteConstructionTomorrow = ids => {
   return service.delete(`${config.url}/business/constructionTomorrow/${ids}`);
 };
 
@@ -94,8 +94,8 @@ export const deleteConstructionTomorrow = (ids) => {
  * @param {string} currentDate - 当前日期
  * @returns {Promise}
  */
-export const getProcessTree = (projectCode, deptId, currentDate) => {
+export const getProcessTree = (deptId, currentDate) => {
   return service.get(`${config.url}/business/schedule/processTree`, {
-    params: { projectCode, deptId, currentDate }
+    params: { deptId, currentDate },
   });
 };

@@ -3,13 +3,10 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-info">
-        <h1 class="page-title">施工日志</h1>
         <p class="page-date">{{ currentDate }}</p>
       </div>
-      <div class="header-weather">
-        <van-icon :name="getWeatherIcon()" class="weather-icon" />
-        <span class="weather-text">{{ logData.weather || '加载中...' }}</span>
-      </div>
+
+      <div class="history-btn" @click="$router.push('/log/history')"></div>
     </div>
 
     <!-- 基本信息 -->
@@ -26,6 +23,7 @@
             placeholder="请选择进度计划"
             readonly
           />
+          <van-field v-model="logData.weather" label="天气" readonly />
           <van-field v-model="logData.section" label="标段" readonly />
           <van-field
             v-model="logData.onsiteLeader"
@@ -41,28 +39,13 @@
       <div class="section-title">
         <van-icon name="orders-o" />
         <span>今日施工内容</span>
-        <van-button size="small" type="primary" plain hairline round @click="handleAddProcess">
-          <van-icon name="plus" />
-          添加
-        </van-button>
       </div>
       <div class="work-card">
-        <div v-if="logData.processes.length === 0" class="empty-process">
-          <van-empty description="暂无施工工序" />
-        </div>
-        <div v-else class="process-list">
+        <div class="process-list">
           <div v-for="(process, index) in logData.processes" :key="index" class="process-item">
-            <van-icon name="cross" class="delete-icon" @click="handleDeleteProcess(index)" />
-            <div class="process-display" @click="handleSelectProcess(index)">
+            <div class="process-display">
               <div class="process-label">工序</div>
               <div class="process-value">
-                <!-- <div class="process-row1">
-                  {{
-                    process.level1Process && process.level2Process
-                      ? `${process.level1Process} / ${process.level2Process}`
-                      : process.processNo || '请选择工序'
-                  }}
-                </div> -->
                 <div class="process-row2">
                   <span v-if="process.level3Process">
                     {{ process.level3Process }}
@@ -78,7 +61,6 @@
                   </span>
                 </div>
               </div>
-              <van-icon name="arrow" class="process-arrow" />
             </div>
             <van-field
               v-model="process.todayContent"
@@ -403,11 +385,68 @@ onMounted(async () => {
   logData.section = userStore.deptName;
   fetchWeather();
 
+  // 获取工序树并自动填充所有施工内容
+  await fetchProcessTreeAndFill();
+
   // 编辑模式 - 加载已有日志数据
   if (isEditMode.value && editLogId.value) {
     await loadLogData(editLogId.value);
   }
 });
+
+// 获取工序树并自动填充施工内容
+async function fetchProcessTreeAndFill() {
+  try {
+    const { data: res } = await getProcessTree(userStore.deptId, '2026-06-01');
+    if (res.code === 200 && res.data) {
+      processCascaderOptions.value = transformProcessTree(res.data);
+      // 扁平化工序树为数组
+      const flatProcesses = flattenProcessTree(res.data);
+      // 自动填充到 logData.processes
+      if (flatProcesses.length > 0) {
+        logData.processes = flatProcesses.map(p => ({
+          processNo: p.processNo || '',
+          level1Process: p.level1Process || '',
+          level2Process: p.level2Process || '',
+          level3Process: p.level3Process || '',
+          completionRate: p.completionRate ?? '',
+          todayContent: '',
+          todayWorkload: '',
+          totalWorkload: '',
+          cumulativeProgress: '',
+          problems: '',
+          attachment: '',
+          attachmentFiles: [],
+        }));
+      }
+    }
+  } catch (error) {
+    // 静默处理错误
+  }
+}
+
+// 扁平化工序树
+function flattenProcessTree(data, level1 = '', level2 = '') {
+  let result = [];
+  data.forEach(item => {
+    if (item.children && item.children.length > 0) {
+      // 有子节点，继续递归
+      result = result.concat(
+        flattenProcessTree(item.children, level1 || item.name, level2 || item.name)
+      );
+    } else {
+      // 叶子节点
+      result.push({
+        processNo: item.processNo || '',
+        level1Process: level1 || '',
+        level2Process: level2 || '',
+        level3Process: item.name || '',
+        completionRate: item.completionRate ?? 0,
+      });
+    }
+  });
+  return result;
+}
 
 // 加载日志数据（编辑用）
 async function loadLogData(id) {
@@ -483,6 +522,8 @@ async function loadLogData(id) {
           level3Process: '',
           completionRate: '',
           todayContent: '',
+          todayWorkload: '',
+          totalWorkload: '',
           cumulativeProgress: '',
           problems: '',
           attachment: '',
@@ -570,6 +611,8 @@ function handleAddProcess() {
     level3Process: '',
     completionRate: '',
     todayContent: '',
+    todayWorkload: '',
+    totalWorkload: '',
     cumulativeProgress: '',
     problems: '',
     attachment: '',
@@ -665,33 +708,20 @@ function handleProcessCascaderFinish({ selectedOptions }) {
 }
 
 async function handleSubmit() {
-  // 校验：至少有一个施工内容
-  const validProcesses = logData.processes.filter(p => p.processNo || p.level1Process);
-  if (validProcesses.length === 0) {
-    showToast('请至少添加一个施工内容');
+  // 校验：至少填写了一个施工内容（有完成内容或今日工作量或累计工作量或累计进度）
+  const hasContent = logData.processes.some(
+    p =>
+      p.todayContent ||
+      p.todayWorkload ||
+      p.totalWorkload ||
+      (p.cumulativeProgress && p.cumulativeProgress !== '')
+  );
+  if (!hasContent) {
+    showToast('请至少填写一个施工内容');
     return;
   }
 
-  // 校验每个施工内容的必填字段
-  for (let i = 0; i < logData.processes.length; i++) {
-    const p = logData.processes[i];
-    // 跳过空项
-    if (!p.processNo && !p.level1Process) continue;
-
-    if (!p.processNo && !p.level1Process) {
-      showToast(`第${i + 1}个施工内容请选择工序`);
-      return;
-    }
-    if (!p.todayContent) {
-      showToast(`第${i + 1}个施工内容请输入完成内容`);
-      return;
-    }
-    if (!p.cumulativeProgress && p.cumulativeProgress !== 0) {
-      showToast(`第${i + 1}个施工内容请输入累计进度`);
-      return;
-    }
-  }
-
+  // 可以提交：有工序且至少填写了一项内容
   const confirmMsg = isEditMode.value ? '确定要重新提交施工日志吗？' : '确定要提交施工日志吗？';
 
   showConfirmDialog({
@@ -848,24 +878,23 @@ async function handleSubmit() {
 
 // 页面头部
 .page-header {
-  background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+  background: url('/src/assets/image/log/log-h-bg.png') no-repeat center/cover;
   padding: 20px 16px;
+  height: 120px;
   color: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 
   .header-info {
-    .page-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 0 0 4px 0;
-    }
-
     .page-date {
       font-size: 13px;
       opacity: 0.9;
       margin: 0;
+      position: absolute;
+      top: 72px;
+      left: 122px;
     }
   }
 
@@ -880,9 +909,18 @@ async function handleSubmit() {
 
     .weather-text {
       font-size: 12px;
-      margin-top: 2px;
+      margin-top: -40px;
       opacity: 0.9;
     }
+  }
+
+  .history-btn {
+    position: absolute;
+    width: 86px;
+    height: 30px;
+    bottom: 12px;
+    right: 16px;
+    background: url('/src/assets/image/log/history-bg.png') no-repeat center/cover;
   }
 }
 
@@ -960,6 +998,9 @@ async function handleSubmit() {
           font-size: 14px;
           color: #646566;
           min-width: 70px;
+
+          width: var(--van-field-label-width);
+          margin-right: var(--van-field-label-margin-right);
         }
 
         .process-value {
@@ -1049,6 +1090,9 @@ async function handleSubmit() {
           font-size: 14px;
           color: #646566;
           min-width: 70px;
+
+          width: var(--van-field-label-width);
+          margin-right: var(--van-field-label-margin-right);
         }
 
         .process-value {

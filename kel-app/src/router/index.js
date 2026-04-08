@@ -717,6 +717,12 @@ const router = createRouter({
       component: () => import('../views/log/log-index.vue'),
       children: [
         {
+          path: 'index',
+          name: 'log-index',
+          meta: { title: '施工日志', isBack: false },
+          component: () => import('../views/log/index.vue'),
+        },
+        {
           path: 'entry',
           name: 'log-entry',
           meta: { title: '施工日志', isBack: false },
@@ -733,6 +739,12 @@ const router = createRouter({
           name: 'log-history',
           meta: { title: '历史记录', isBack: false },
           component: () => import('../views/log/log-history.vue'),
+        },
+        {
+          path: 'history',
+          name: 'history',
+          meta: { title: '历史记录', isBack: false },
+          component: () => import('../views/log/history.vue'),
         },
       ],
     },
