@@ -91,7 +91,8 @@
               :max="100"
               @blur="
                 () => {
-                  if (process?.cumulativeProgress < 0) process.cumulativeProgress = 0;
+                  if (process?.cumulativeProgress < process?.completionRate ?? 0)
+                    process.cumulativeProgress = process?.completionRate ?? 0;
                   if (process?.cumulativeProgress > 100) process.cumulativeProgress = 100;
                 }
               "
@@ -147,7 +148,7 @@
       </div>
       <div class="plan-card">
         <div v-if="logData.plans.length === 0" class="empty-process">
-          <van-empty description="暂无明日计划" />
+          <van-empty class="!p-0" description="暂无明日计划" />
         </div>
         <div v-else class="process-list">
           <div v-for="(plan, index) in logData.plans" :key="index" class="process-item">
@@ -183,8 +184,8 @@
               :max="100"
               @blur="
                 () => {
-                  if (process?.cumulativeProgress < 0) process.cumulativeProgress = 0;
-                  if (process?.cumulativeProgress > 100) process.cumulativeProgress = 100;
+                  if (plan?.cumulativeProgress < 0) plan.cumulativeProgress = 0;
+                  if (plan?.cumulativeProgress > 100) plan.cumulativeProgress = 100;
                 }
               "
             >
@@ -212,7 +213,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, h } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { showToast, showConfirmDialog } from 'vant';
 import {
@@ -225,17 +226,14 @@ import {
   deleteConstructionToday,
   deleteConstructionTomorrow,
 } from '@/api/construction-log';
+import { getScheduleList } from '@/api/schedule';
 import { batchUpload, getFileInfo } from '@/api/system';
 import dayjs from 'dayjs';
 import useUserStore from '@/stores/user';
 
-import { useDict } from '@/utils/dict';
-
 defineOptions({
   name: 'ConstructionLog',
 });
-
-const { project_name } = useDict('project_name');
 
 // 路由
 const router = useRouter();
@@ -326,20 +324,6 @@ const logData = reactive({
   ],
 });
 
-watch(
-  project_name,
-  value => {
-    if (value[0]?.value) {
-      logData.projectName = value[0].label;
-      logData.projectCode = value[0].value;
-    }
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
-
 // 提交中状态
 const submitting = ref(false);
 
@@ -363,10 +347,14 @@ function transformProcessTree(data, level = 0) {
 
 // 初始化记录人和天气
 onMounted(async () => {
-  // logData.logDate = new Date().toISOString().slice(0, 10);
-  logData.logDate = '2026-06-01';
+  logData.logDate = new Date().toISOString().slice(0, 10);
+  // logData.logDate = '2026-06-01';
   logData.logNo = 'LOG' + Date.now();
   logData.section = userStore.deptName;
+
+  // 获取项目信息（projectCode和projectName）
+  await fetchProjectInfo();
+
   fetchWeather();
 
   // 获取工序树并自动填充所有施工内容
@@ -378,10 +366,30 @@ onMounted(async () => {
   }
 });
 
+// 获取项目信息
+async function fetchProjectInfo() {
+  try {
+    const { data: res } = await getScheduleList({
+      deptId: userStore.deptId,
+      pageNum: 1,
+      pageSize: 1,
+    });
+
+    console.log(res);
+    if (res.code === 200 && res.rows && res.rows.length > 0) {
+      const schedule = res.rows[0];
+      logData.projectCode = schedule.projectCode;
+      logData.projectName = schedule.projectName;
+    }
+  } catch (error) {
+    // 静默处理错误
+  }
+}
+
 // 获取工序树并自动填充施工内容
 async function fetchProcessTreeAndFill() {
   try {
-    const { data: res } = await getProcessTree(userStore.deptId, '2026-06-01');
+    const { data: res } = await getProcessTree(userStore.deptId, logData.logDate);
     if (res.code === 200 && res.data) {
       processCascaderOptions.value = transformProcessTree(res.data);
       // 扁平化工序树为数组
@@ -397,7 +405,7 @@ async function fetchProcessTreeAndFill() {
           todayContent: '',
           todayWorkload: '',
           totalWorkload: '',
-          cumulativeProgress: '',
+          cumulativeProgress: p.completionRate ?? '',
           problems: '',
           attachment: '',
           attachmentFiles: [],
@@ -687,25 +695,46 @@ function handleProcessCascaderFinish({ selectedOptions }) {
 }
 
 async function handleSubmit() {
-  // 校验：至少填写了一个施工内容（有完成内容或今日工作量或累计工作量或累计进度）
-  const hasContent = logData.processes.some(
-    p =>
-      p.todayContent ||
-      p.todayWorkload ||
-      p.totalWorkload ||
-      (p.cumulativeProgress && p.cumulativeProgress !== '')
+  // 统计施工内容情况
+  const totalProcesses = logData.processes.length;
+  const validProcesses = logData.processes.filter(
+    p => p.todayContent && Number(p.cumulativeProgress) != '' && p.cumulativeProgress !== null
   );
-  if (!hasContent) {
-    showToast('请至少填写一个施工内容');
+  const invalidProcesses = logData.processes.filter(
+    p => !p.todayContent || Number(p.cumulativeProgress) == '' || p.cumulativeProgress === null
+  );
+
+  if (totalProcesses === 0 || validProcesses.length === 0) {
+    showToast('请至少填写一个施工内容，且必须填写完成内容和累计进度');
     return;
   }
 
-  // 可以提交：有工序且至少填写了一项内容
-  const confirmMsg = isEditMode.value ? '确定要重新提交施工日志吗？' : '确定要提交施工日志吗？';
+  // 检查是否有未填完整的施工内容
+  let confirmMsg = '';
+  let confirmMessageNode = null;
+  if (invalidProcesses.length > 0) {
+    confirmMessageNode = h('div', [
+      h('div', [
+        `已填写：`,
+        h('span', { style: 'color:#07c160' }, `${validProcesses.length}个`),
+        `，`,
+
+        `未填写：`,
+        h('span', { style: 'color:#ee6666' }, `${invalidProcesses.length}个`),
+      ]),
+      h(
+        'div',
+        { style: 'margin-top:10px' },
+        `有 ${invalidProcesses.length} 个施工内容未填写完成内容或累计进度，提交成功后今日无法再次提交，确定要提交吗？`
+      ),
+    ]);
+  } else {
+    confirmMsg = isEditMode.value ? '确定要重新提交施工日志吗？' : '确定要提交施工日志吗？';
+  }
 
   showConfirmDialog({
     title: '确认提交',
-    message: confirmMsg,
+    message: confirmMessageNode || confirmMsg,
   })
     .then(async () => {
       submitting.value = true;
@@ -757,9 +786,15 @@ async function handleSubmit() {
         }
 
         if (logId && logData.processes.length > 0) {
+          // 过滤掉未填写完整的施工内容，只保留已填写的
+          const validProcessList = logData.processes.filter(
+            p =>
+              p.todayContent && Number(p.cumulativeProgress) != '' && p.cumulativeProgress !== null
+          );
+
           // 处理每个施工内容：上传附件并获取ID
           const todayData = await Promise.all(
-            logData.processes.map(async p => {
+            validProcessList.map(async p => {
               // 跳过空项
               if (!p.processNo && !p.level1Process) return null;
 
@@ -801,7 +836,7 @@ async function handleSubmit() {
                 todayContent: p.todayContent,
                 todayWorkload: p.todayWorkload,
                 totalWorkload: p.totalWorkload,
-                cumulativeProgress: p.cumulativeProgress,
+                cumulativeProgress: p.cumulativeProgress || '',
                 problems: p.problems,
                 attachment: finalAttachmentIds, // 最终的文件ID拼接
                 logId: logId,
