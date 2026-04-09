@@ -18,7 +18,7 @@ const menuItems = [
   { icon: iconZhiliang, label: '质量监督' },
   { icon: iconAnquan, label: '安全监督' },
   { icon: iconXietiao, label: '问题协调' },
-  { icon: iconTongzhi, label: '通知公告' },
+  { icon: iconTongzhi, label: '通知公告', url: '/notice/index' },
 ];
 </script>
 

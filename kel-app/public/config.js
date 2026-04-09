@@ -25,8 +25,11 @@ const config = {
   // frUrl: 'https://192.168.0.150:30443/webroot/decision',
 
   // 文件
-  fileUrl: 'http://60.13.219.226:30453',
+  // fileUrl: 'http://60.13.219.226:30453',
 
   // 隐患文件
   fileUrlForPitfall: 'http://60.13.219.226:12302/ftp/',
+
+  /* ***********延安***************** */
+  fileUrl: 'http://192.168.31.19:8080',
 };

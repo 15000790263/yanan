@@ -23,257 +23,100 @@
     </div>
 
     <!-- 日历组件 -->
-    <transition name="calendar-slide">
-      <div v-if="showCalendar" class="calendar-wrapper">
-        <div class="calendar-legend">
-          <span class="legend-item">
-            <span class="dot not-filled"></span>
-            <span>未填报</span>
-          </span>
-          <span class="legend-item">
-            <span class="dot filled"></span>
-            <span>已填报</span>
-          </span>
-        </div>
-        <Calendar
-          ref="calendarRef"
-          v-model="selectedDate"
-          :attributes="attributes"
-          transparent
-          borderless
-          expanded
-          @dayclick="handleDayClick"
-        />
-        <div class="calendar-footer">
-          <van-button type="primary" size="small" round @click="goToToday">今天</van-button>
-        </div>
+    <div v-if="showCalendar" class="calendar-wrapper">
+      <div class="calendar-legend">
+        <span class="legend-item">
+          <span class="dot not-filled"></span>
+          <span>未填报</span>
+        </span>
+        <span class="legend-item">
+          <span class="dot filled"></span>
+          <span>已填报</span>
+        </span>
       </div>
-    </transition>
-
-    <!-- 统计区域 -->
-    <div class="stats-section">
-      <div
-        class="stats-card"
-        :class="{ active: activeStatus === '' }"
-        @click="handleStatusChange('')"
-      >
-        <div class="stats-value">{{ stats.all }}</div>
-        <div class="stats-label">全部</div>
-      </div>
-      <div
-        class="stats-card"
-        :class="{ active: activeStatus === '0' }"
-        @click="handleStatusChange('0')"
-      >
-        <div class="stats-value pending">{{ stats.pending }}</div>
-        <div class="stats-label">待修改</div>
-      </div>
-      <div
-        class="stats-card"
-        :class="{ active: activeStatus === '1' }"
-        @click="handleStatusChange('1')"
-      >
-        <div class="stats-value">{{ stats.waiting }}</div>
-        <div class="stats-label">未审核</div>
-      </div>
-      <div
-        class="stats-card"
-        :class="{ active: activeStatus === '2' }"
-        @click="handleStatusChange('2')"
-      >
-        <div class="stats-value completed">{{ stats.approved }}</div>
-        <div class="stats-label">已审核</div>
+      <Calendar
+        ref="calendarRef"
+        v-model="selectedDate"
+        :attributes="attributes"
+        transparent
+        borderless
+        expanded
+        @dayclick="handleDayClick"
+        @did-move="handlePageChange"
+      />
+      <div class="calendar-footer">
+        <van-button type="primary" size="small" round @click="goToToday">今天</van-button>
       </div>
     </div>
 
-    <!-- 日志列表 -->
-    <div class="log-list">
-      <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-        <van-list
-          v-model:loading="loading"
-          :finished="finished"
-          finished-text="没有更多了"
-          @load="onLoad"
-        >
-          <div v-for="log in logList" :key="log.id" class="log-card" @click="handleViewDetail(log)">
-            <div class="log-header">
-              <div class="log-date-badge">
-                <span class="day">{{ formatDay(log.logDate) }}</span>
-                <span class="month">{{ formatMonth(log.logDate) }}</span>
-              </div>
-              <div class="log-info">
-                <div class="log-title">
-                  {{ log.projectName }}
-                  <van-tag :type="statusTagType[log.status]" size="small">{{
-                    statusLabel[log.status]
-                  }}</van-tag>
-                </div>
-                <div class="log-meta">
-                  <span class="meta-item">
-                    <van-icon name="user-o" />
-                    {{ log.recorder }}
-                  </span>
-                  <span class="meta-item">
-                    <van-icon name="flag-o" />
-                    {{ log.section }}
-                  </span>
-                </div>
-              </div>
-            </div>
+    <!-- 详情内容 -->
+    <div v-if="showDetail && detailData.log" class="detail-section">
+      <div class="detail-header">
+        <h3>日志详情</h3>
+      </div>
+      <!-- 基本信息 -->
+      <div class="detail-block">
+        <h4>基本信息</h4>
+        <van-cell-group>
+          <van-cell title="项目名称" :value="detailData.log.projectName" />
+          <van-cell title="标段" :value="detailData.log.section" />
+          <van-cell title="记录人" :value="detailData.log.recorder" />
+          <van-cell title="记录日期" :value="detailData.log.logDate" />
+          <van-cell title="天气" :value="detailData.log.weather" />
+          <van-cell title="现场负责人" :value="detailData.log.onsiteLeader || '-'" />
+        </van-cell-group>
+      </div>
 
-            <div class="log-summary">
-              <div class="summary-item">
-                <span class="label">天气</span>
-                <span class="value">{{ log.weather || '-' }}</span>
-              </div>
-              <div v-if="log.onsiteLeader" class="summary-item">
-                <span class="label">现场负责人</span>
-                <span class="value">{{ log.onsiteLeader }}</span>
-              </div>
+      <!-- 今日施工内容 -->
+      <div v-if="detailData.todayList?.length > 0" class="detail-block">
+        <h4>今日施工内容</h4>
+        <div class="process-list">
+          <div v-for="(p, i) in detailData.todayList" :key="i" class="process-item">
+            <div class="process-name">{{ p.processNo }}</div>
+            <div class="process-content">{{ p.todayContent || '无' }}</div>
+            <div v-if="p.todayWorkload || p.totalWorkload" class="process-info">
+              <span v-if="p.todayWorkload">今日工作量: {{ p.todayWorkload }}</span>
+              <span v-if="p.totalWorkload">累计工作量: {{ p.totalWorkload }}</span>
             </div>
-            <!-- 待修改状态显示编辑按钮 -->
-            <van-button
-              v-if="log.status === '0'"
-              type="warning"
-              size="small"
-              round
-              class="edit-btn"
-              @click.stop="handleEdit(log)"
-            >
-              修改
-            </van-button>
+            <div class="process-info">
+              <span>进度: {{ p.cumulativeProgress }}%</span>
+              <span v-if="p.problems" class="problem">问题: {{ p.problems }}</span>
+            </div>
+            <!-- 附件图片 -->
+            <div v-if="p.attachmentUrls?.length" class="attachment-images">
+              <van-image
+                v-for="(url, idx) in p.attachmentUrls"
+                :key="idx"
+                width="60"
+                height="60"
+                fit="cover"
+                :src="url"
+                radius="6"
+              />
+            </div>
           </div>
+        </div>
+      </div>
 
-          <van-empty v-if="logList.length === 0 && !loading" description="暂无历史记录" />
-        </van-list>
-      </van-pull-refresh>
+      <!-- 明日施工计划 -->
+      <div v-if="detailData.tomorrowList?.length > 0" class="detail-block">
+        <h4>明日施工计划</h4>
+        <div class="plan-list">
+          <div v-for="(p, i) in detailData.tomorrowList" :key="i" class="plan-item">
+            <div class="plan-name">{{ p.processName }}</div>
+            <div class="plan-content">{{ p.tomorrowPlan || '无' }}</div>
+            <div class="plan-info">
+              <span>计划进度: {{ p.plannedProgress }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 详情弹窗 -->
-    <van-popup
-      v-model:show="showDetail"
-      position="right"
-      :style="{ width: '100%', height: '100%' }"
-    >
-      <div class="detail-popup">
-        <van-nav-bar title="日志详情" left-arrow @click-left="showDetail = false" />
-        <div class="detail-content" v-if="detailData.log">
-          <!-- 基本信息 -->
-          <div class="detail-section">
-            <h3>基本信息</h3>
-            <van-cell-group>
-              <van-cell title="项目名称" :value="detailData.log.projectName" />
-              <van-cell title="标段" :value="detailData.log.section" />
-              <van-cell title="记录人" :value="detailData.log.recorder" />
-              <van-cell title="记录日期" :value="detailData.log.logDate" />
-              <van-cell title="天气" :value="detailData.log.weather" />
-              <van-cell title="现场负责人" :value="detailData.log.onsiteLeader || '-'" />
-            </van-cell-group>
-          </div>
-
-          <!-- 今日施工内容 -->
-          <div v-if="detailData.todayList?.length > 0" class="detail-section">
-            <h3>今日施工内容</h3>
-            <div class="process-list">
-              <div v-for="(p, i) in detailData.todayList" :key="i" class="process-item">
-                <div class="process-name">{{ p.processNo }}</div>
-                <div class="process-content">{{ p.todayContent || '无' }}</div>
-                <div v-if="p.todayWorkload || p.totalWorkload" class="process-info">
-                  <span v-if="p.todayWorkload">今日工作量: {{ p.todayWorkload }}</span>
-                  <span v-if="p.totalWorkload">累计工作量: {{ p.totalWorkload }}</span>
-                </div>
-                <div class="process-info">
-                  <span>进度: {{ p.cumulativeProgress }}%</span>
-                  <span v-if="p.problems" class="problem">问题: {{ p.problems }}</span>
-                </div>
-                <!-- 附件图片 -->
-                <div v-if="p.attachmentUrls?.length" class="attachment-images">
-                  <van-image
-                    v-for="(url, idx) in p.attachmentUrls"
-                    :key="idx"
-                    width="60"
-                    height="60"
-                    fit="cover"
-                    :src="url"
-                    radius="6"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 明日施工计划 -->
-          <div v-if="detailData.tomorrowList?.length > 0" class="detail-section">
-            <h3>明日施工计划</h3>
-            <div class="plan-list">
-              <div v-for="(p, i) in detailData.tomorrowList" :key="i" class="plan-item">
-                <div class="plan-name">{{ p.processName }}</div>
-                <div class="plan-content">{{ p.tomorrowPlan || '无' }}</div>
-                <div class="plan-info">
-                  <span>计划进度: {{ p.plannedProgress }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <van-empty
-            v-if="!detailData.todayList?.length && !detailData.tomorrowList?.length"
-            description="暂无施工内容"
-          />
-
-          <!-- 审核按钮：有权限且状态为未审核时显示 -->
-          <div v-if="hasAuditPermission && detailData.log?.status === '1'" class="audit-section">
-            <van-button type="primary" round block @click="showAuditPopup = true">
-              审核
-            </van-button>
-          </div>
-        </div>
-        <van-loading v-else-if="!detailData.log" size="24px" />
-      </div>
-    </van-popup>
-
-    <!-- 审核弹窗 -->
-    <van-popup v-model:show="showAuditPopup" round :style="{ width: '85%', padding: '20px' }">
-      <div class="audit-popup">
-        <div class="audit-title">一级审核</div>
-        <div class="audit-content">
-          <div class="audit-actions">
-            <van-button
-              :class="{ 'btn-selected': auditAction === 'pass' }"
-              type="success"
-              round
-              plain
-              @click="handleAuditPass"
-            >
-              通过
-            </van-button>
-            <van-button
-              :class="{ 'btn-selected': auditAction === 'reject' }"
-              type="danger"
-              round
-              plain
-              @click="handleAuditReject"
-            >
-              拒绝
-            </van-button>
-          </div>
-          <van-field
-            v-model="auditComment"
-            type="textarea"
-            placeholder="请输入拒绝原因（必填）"
-            rows="3"
-            :disabled="auditAction !== 'reject'"
-            :required="auditAction === 'reject'"
-          />
-        </div>
-        <div class="audit-footer">
-          <van-button round @click="showAuditPopup = false">取消</van-button>
-          <van-button type="primary" round :loading="auditing" @click="submitAudit">
-            确定
-          </van-button>
-        </div>
-      </div>
-    </van-popup>
+    <!-- 无数据提示 -->
+    <div v-else-if="showDetail && !detailData.log" class="no-data-tip">
+      <van-empty description="暂无数据" />
+    </div>
   </div>
 </template>
 
@@ -281,12 +124,7 @@
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast } from 'vant';
-import {
-  getLogList,
-  getLogDetail,
-  updateConstructionLog,
-  getLogStats,
-} from '@/api/construction-log';
+import { getLogList, getLogDetail } from '@/api/construction-log';
 import { getFileInfo, getUserPermissionsInfo } from '@/api/system';
 import dayjs from 'dayjs';
 import { Calendar } from 'v-calendar';
@@ -300,89 +138,204 @@ const currentDay = ref(dayjs().date());
 // 日历相关
 const showCalendar = ref(false);
 const calendarRef = ref(null);
-const selectedDate = ref(new Date());
+const selectedDate = ref(dayjs().toDate());
 
 // 根据日志列表生成日历属性
 const attributes = computed(() => {
   const result = [];
 
-  // 收集有数据的日期
-  const datesWithData = new Set();
+  // 构建日期到日志的映射
+  const dateLogMap = {};
   logList.value.forEach(log => {
     if (log.logDate) {
-      // 转换日期格式为 YYYY-MM-DD
-      const dateStr = log.logDate.split(' ')[0];
-      datesWithData.add(dateStr);
+      dateLogMap[log.logDate] = log;
     }
   });
 
-  // 已填报的日期 - 绿色 dots
+  // 使用当前日历显示的月份
+  const year = currentYear.value;
+  const month = currentMonth.value;
+  const daysInMonth = dayjs(`${year}-${String(month).padStart(2, '0')}-01`).daysInMonth();
+
+  // 已填报的日期
   const filledDates = [];
-  // 未填报的日期 - 红色 dots
+  // 未填报的日期
   const notFilledDates = [];
 
-  // 获取当月1日到月末的所有日期
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dateObj = new Date(dateStr);
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateObj = dayjs(dateStr).toDate();
 
-    if (datesWithData.has(dateStr)) {
-      filledDates.push(dateObj);
+    if (dateLogMap[dateStr]) {
+      // 已填报 - 关联日志数据
+      filledDates.push({
+        date: dateObj,
+        customData: dateLogMap[dateStr],
+      });
     } else {
+      // 未填报
       notFilledDates.push(dateObj);
     }
   }
 
-  // 已填报 - 绿色
+  // 已填报 - 绿色，携带 customData
   if (filledDates.length > 0) {
-    result.push({
-      dot: 'green',
-      dates: filledDates,
+    filledDates.forEach(item => {
+      result.push({
+        dot: {
+          style: {
+            backgroundColor: '#07c160',
+            width: '8px',
+            height: '8px',
+          },
+        },
+        dates: item.date,
+        customData: item.customData,
+      });
     });
   }
 
   // 未填报 - 红色
   if (notFilledDates.length > 0) {
     result.push({
-      dot: 'red',
+      dot: {
+        style: {
+          backgroundColor: '#ee6666',
+          width: '8px',
+          height: '8px',
+        },
+      },
       dates: notFilledDates,
     });
   }
+
+  // 选中日期的高亮
+  const selectedDateStr = `${currentYear.value}-${String(currentMonth.value).padStart(
+    2,
+    '0'
+  )}-${String(currentDay.value).padStart(2, '0')}`;
+
+  result.push({
+    key: 'selected',
+    highlight: {
+      fillMode: 'outline',
+      borderColor: '#118ad2',
+    },
+    dates: dayjs(selectedDateStr).toDate(),
+  });
 
   // 今天的蓝色高亮
   result.push({
     key: 'today',
     highlight: true,
-    dates: new Date(),
+    dates: dayjs().toDate(),
   });
 
   return result;
 });
 
 // 点击日期
-function handleDayClick(day) {
+async function handleDayClick(day) {
   selectedDate.value = day.date;
   currentYear.value = dayjs(day.date).year();
   currentMonth.value = dayjs(day.date).month() + 1;
   currentDay.value = dayjs(day.date).date();
-  showCalendar.value = false;
+
+  // 无论有没有数据，都标记为已点击
+  showDetail.value = true;
+
+  // 检查是否有日志数据
+  if (day.attributes) {
+    // 查找有 customData 的属性
+    const logAttr = day.attributes.find(attr => attr.customData && attr.customData.id);
+    if (logAttr) {
+      // 有数据，获取详情
+      await fetchLogDetail(logAttr.customData.id);
+    } else {
+      // 无数据
+      detailData.log = null;
+      detailData.todayList = [];
+      detailData.tomorrowList = [];
+    }
+  } else {
+    // 无数据
+    detailData.log = null;
+    detailData.todayList = [];
+    detailData.tomorrowList = [];
+  }
+}
+
+// 获取日志详情
+async function fetchLogDetail(logId) {
+  detailData.log = null;
+  detailData.todayList = [];
+  detailData.tomorrowList = [];
+
+  try {
+    const { data: res } = await getLogDetail(logId);
+    if (res.code === 200 && res.data) {
+      detailData.log = res.data.log;
+      const todayList = res.data.todayList || [];
+      const tomorrowList = res.data.tomorrowList || [];
+
+      // 处理今日施工内容的附件
+      for (const item of todayList) {
+        if (item.attachment) {
+          const fileIds = item.attachment.split(',').filter(Boolean);
+          const fileUrls = await Promise.all(
+            fileIds.map(async id => {
+              try {
+                const fileRes = await getFileInfo(id);
+                return fileRes.data.code === 200 ? fileRes.data.data.url : '';
+              } catch {
+                return '';
+              }
+            })
+          );
+          item.attachmentUrls = fileUrls.filter(Boolean);
+        }
+      }
+
+      detailData.todayList = todayList;
+      detailData.tomorrowList = tomorrowList;
+    }
+  } catch (error) {
+    // ignore
+  }
 }
 
 // 跳转到今天
 function goToToday() {
-  const today = new Date();
-  selectedDate.value = today;
-  currentYear.value = dayjs(today).year();
-  currentMonth.value = dayjs(today).month() + 1;
-  currentDay.value = dayjs(today).date();
+  const today = dayjs();
+  selectedDate.value = today.toDate();
+  currentYear.value = today.year();
+  currentMonth.value = today.month() + 1;
+  currentDay.value = today.date();
   // 跳转到今天所在的月份视图
   if (calendarRef.value) {
-    calendarRef.value.move(today);
+    calendarRef.value.move(today.toDate());
+  }
+}
+
+// 日历切换月份
+function handlePageChange(pages) {
+  // return;
+  if (pages && pages.length > 0) {
+    const firstPage = pages[0];
+    const year = firstPage.year;
+    const month = firstPage.month;
+
+    // 更新日期范围
+    const startDate = dayjs(`${year}-${String(month).padStart(2, '0')}-01`);
+    beginLogDate.value = startDate.format('YYYY-MM-DD');
+    endLogDate.value = startDate.endOf('month').format('YYYY-MM-DD');
+
+    // 更新顶部显示
+    currentYear.value = year;
+    currentMonth.value = month;
+
+    // 重新获取数据
+    fetchList();
   }
 }
 
@@ -393,26 +346,21 @@ defineOptions({
 // 路由
 const router = useRouter();
 
-// 统计
-const stats = reactive({
-  all: 0,
-  pending: 0,
-  waiting: 0,
-  approved: 0,
-});
-
-// 状态
-const activeStatus = ref('');
-const statusLabel = { 0: '待修改', 1: '未审核', 2: '已审核' };
-const statusTagType = { 0: 'danger', 1: 'warning', 2: 'success' };
-
 // 列表数据
 const logList = ref([]);
-const loading = ref(false);
-const finished = ref(false);
-const refreshing = ref(false);
-const pageNum = ref(1);
-const pageSize = 10;
+
+// 日期范围
+const beginLogDate = ref('');
+const endLogDate = ref('');
+
+// 初始化日期范围（当月第一天到最后一天）
+function initDateRange() {
+  const now = dayjs();
+  beginLogDate.value = now.startOf('month').format('YYYY-MM-DD');
+  endLogDate.value = now.endOf('month').format('YYYY-MM-DD');
+}
+
+initDateRange();
 
 // 详情数据
 const showDetail = ref(false);
@@ -422,182 +370,46 @@ const detailData = reactive({
   tomorrowList: [],
 });
 
-// 审核相关
-import useUserStore from '@/stores/user';
-const userStore = useUserStore();
-const hasAuditPermission = computed(() => {
-  return userStore.roles?.includes('log_audit_first');
-});
-const showAuditPopup = ref(false);
-const auditAction = ref(''); // 'pass' 或 'reject'
-const auditComment = ref('');
-const auditing = ref(false);
-
-// 获取统计
-async function fetchStats() {
+// 获取列表
+async function fetchList() {
   try {
-    const { data: res } = await getLogStats();
-    if (res.code === 200 && res.data) {
-      const d = res.data;
-      stats.all = d.total || 0;
-      stats.pending = d.status0 || 0;
-      stats.waiting = d.status1 || 0;
-      stats.approved = d.status2 || 0;
+    const params = {
+      pageNum: 1,
+      pageSize: 100,
+      ['params[beginLogDate]']: beginLogDate.value,
+      ['params[endLogDate]']: endLogDate.value,
+    };
+    const { data: res } = await getLogList(params);
+
+    if (res.code === 200) {
+      logList.value = res.rows || [];
+
+      // 获取当天数据
+      await initTodayDetail();
     }
   } catch (error) {
     // ignore
   }
 }
 
-fetchStats();
+// 初始化当天详情数据
+async function initTodayDetail() {
+  const todayStr = dayjs().format('YYYY-MM-DD');
+  const todayLog = logList.value.find(log => log.logDate === todayStr);
 
-// 审核通过
-function handleAuditPass() {
-  auditAction.value = 'pass';
-  auditComment.value = '';
-}
+  showDetail.value = true;
 
-// 审核拒绝
-function handleAuditReject() {
-  auditAction.value = 'reject';
-  auditComment.value = '';
-}
-
-// 提交审核
-async function submitAudit() {
-  if (!auditAction.value) {
-    showToast('请选择审核操作');
-    return;
-  }
-  if (auditAction.value === 'reject' && !auditComment.value.trim()) {
-    showToast('请填写拒绝原因');
-    return;
-  }
-
-  auditing.value = true;
-  try {
-    const now = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    const params = {
-      id: detailData.log.id,
-      status: auditAction.value === 'pass' ? '2' : '0',
-      reviewTime: now,
-      reviewer: userStore.nickName,
-    };
-    if (auditAction.value === 'reject') {
-      params.reviewComment = auditComment.value;
-    }
-    const { data: res } = await updateConstructionLog(params);
-    if (res.code === 200) {
-      showToast('审核成功');
-      showDetail.value = false;
-      showAuditPopup.value = false;
-      // 刷新列表
-      pageNum.value = 1;
-      finished.value = false;
-      logList.value = [];
-      onLoad();
-    } else {
-      showToast(res.msg || '审核失败');
-    }
-  } catch (error) {
-    showToast('审核失败');
-  } finally {
-    auditing.value = false;
+  if (todayLog && todayLog.id) {
+    await fetchLogDetail(todayLog.id);
+  } else {
+    detailData.log = null;
+    detailData.todayList = [];
+    detailData.tomorrowList = [];
   }
 }
 
-// 切换状态筛选
-function handleStatusChange(status) {
-  activeStatus.value = status;
-  pageNum.value = 1;
-  finished.value = false;
-  logList.value = [];
-  loading.value = true;
-  fetchList();
-}
-
-// 获取列表
-async function fetchList() {
-  try {
-    const params = {
-      pageNum: pageNum.value,
-      pageSize: pageSize,
-    };
-    if (activeStatus.value !== '') {
-      params.status = activeStatus.value;
-    }
-    const { data: res } = await getLogList(params);
-    loading.value = false;
-    refreshing.value = false;
-
-    if (res.code === 200) {
-      const newList = res.rows || [];
-
-      // Determine whether to replace the list (first page) or append (subsequent pages)
-      if (pageNum.value === 1) {
-        logList.value = newList; // Replace the list for the first page
-      } else {
-        logList.value.push(...newList); // Append for subsequent pages
-      }
-
-      // 数据不够一页时标记已完成
-      if (newList.length < pageSize) {
-        finished.value = true;
-      }
-
-      pageNum.value++; // Increment pageNum AFTER it's used to update logList
-
-      // 收集需要查询的用户ID
-      const userIds = [...new Set(newList.map(item => item.recorder).filter(Boolean))];
-      const userNameMap = {};
-
-      // 批量获取用户昵称
-      if (userIds.length > 0) {
-        await Promise.all(
-          userIds.map(async userId => {
-            try {
-              const userRes = await getUserPermissionsInfo(userId);
-              if (userRes.data.code === 200 && userRes.data.data) {
-                userNameMap[userId] = userRes.data.data.nickName;
-              }
-            } catch {
-              // ignore
-            }
-          })
-        );
-      }
-
-      // 替换 recorder 为昵称
-      logList.value.forEach(item => {
-        if (item.recorder && userNameMap[item.recorder]) {
-          item.recorder = userNameMap[item.recorder];
-        }
-      });
-    }
-  } catch (error) {
-    loading.value = false;
-    refreshing.value = false;
-    showToast('获取失败');
-  }
-}
-
-// 上拉加载
-function onLoad() {
-  if (finished.value) {
-    loading.value = false;
-    return;
-  }
-  loading.value = true;
-  fetchList();
-}
-
-// 下拉刷新
-function onRefresh() {
-  pageNum.value = 1;
-  finished.value = false;
-  loading.value = true;
-  fetchList();
-}
+// 获取当前月份的日志数据
+fetchList();
 
 // 查看详情
 async function handleViewDetail(log) {
@@ -783,237 +595,109 @@ function formatMonth(date) {
   }
 }
 
-// 日历过渡动画
-.calendar-slide-enter-active,
-.calendar-slide-leave-active {
-  transition: all 0.3s ease;
-}
+// 详情内容
+.detail-section {
+  padding: 12px 16px;
 
-.calendar-slide-enter-from,
-.calendar-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-// 日志列表
-.log-list {
-  padding: 0 16px;
-  padding-top: 16px;
-}
-
-.log-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  }
-
-  .log-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
+  .detail-header {
     margin-bottom: 12px;
 
-    // 橙色日期徽章
-    .log-date-badge {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, @ele-orange 0%, @ele-orange-light 100%);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(255, 103, 0, 0.3);
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+  }
 
-      .day {
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 1;
-      }
+  .detail-block {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
-      .month {
-        font-size: 10px;
-        font-weight: 500;
-        opacity: 0.9;
-        margin-top: 1px;
-      }
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 12px 0;
+      padding-left: 10px;
+      border-left: 3px solid #118ad2;
     }
 
-    .log-info {
-      flex: 1;
+    .process-list,
+    .plan-list {
+      .process-item,
+      .plan-item {
+        padding: 12px;
+        background: #f7f8fa;
+        border-radius: 6px;
+        margin-bottom: 10px;
 
-      .log-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: @ele-text;
-        margin-bottom: 6px;
-        line-height: 1.3;
-      }
+        &:last-child {
+          margin-bottom: 0;
+        }
 
-      .log-meta {
-        display: flex;
-        gap: 16px;
+        .process-name,
+        .plan-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 6px;
+        }
 
-        .meta-item {
+        .process-content,
+        .plan-content {
+          font-size: 13px;
+          color: #666;
+          line-height: 1.5;
+          margin-bottom: 8px;
+        }
+
+        .process-info,
+        .plan-info {
+          font-size: 12px;
+          color: #118ad2;
           display: flex;
           align-items: center;
-          gap: 4px;
-          font-size: 12px;
-          color: @ele-text-light;
+          gap: 12px;
 
-          .van-icon {
-            font-size: 14px;
-            color: @ele-text-gray;
+          .problem {
+            color: #ee6666;
           }
+        }
+
+        .attachment-images {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
       }
     }
-  }
 
-  .log-summary {
-    background: @ele-gray;
-    border-radius: 6px;
-    padding: 10px 12px;
+    :deep(.van-cell) {
+      padding: 12px 16px;
 
-    .summary-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      &:not(:last-child) {
-        margin-bottom: 6px;
-      }
-
-      .label {
-        font-size: 12px;
-        color: @ele-text-gray;
-        min-width: 32px;
-      }
-
-      .value {
+      .van-cell__title {
+        color: #999;
         font-size: 13px;
-        color: @ele-text;
+      }
+
+      .van-cell__value {
+        color: #333;
+        font-size: 14px;
       }
     }
   }
-
-  // 编辑按钮
-  .edit-btn {
-    margin-top: 10px;
-    width: 100%;
-  }
 }
 
-// 统计区域
-.stats-section {
-  display: flex;
-  gap: 6px;
-  padding: 12px 16px;
-  background: #fff;
-}
-
-.stats-card {
-  flex: 1;
+// 无数据提示
+.no-data-tip {
+  padding: 40px 16px;
   text-align: center;
-  padding: 10px 6px;
-  border-radius: 8px;
-  background: #f5f5f5;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  .stats-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .stats-label {
-    font-size: 11px;
-    color: #666;
-    margin-top: 2px;
-  }
-
-  &.active {
-    background: linear-gradient(135deg, @ele-orange 0%, @ele-orange-light 100%);
-    color: #fff;
-
-    .stats-value,
-    .stats-label {
-      color: #fff;
-    }
-  }
-
-  .pending {
-    color: #ee6666;
-  }
-
-  .completed {
-    color: #07c160;
-  }
-}
-
-// 审核区域
-.audit-section {
-  padding: 16px;
-  background: #fff;
-  margin-top: 12px;
-}
-
-// 审核弹窗
-.audit-popup {
-  .audit-title {
-    font-size: 18px;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-  }
-
-  .audit-content {
-    margin-bottom: 20px;
-
-    .audit-actions {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-
-      .van-button {
-        flex: 1;
-
-        &.btn-selected {
-          &.van-button--success {
-            background: #07c160;
-            border-color: #07c160;
-            color: #fff;
-          }
-          &.van-button--danger {
-            background: #ee6666;
-            border-color: #ee6666;
-            color: #fff;
-          }
-        }
-      }
-    }
-  }
-
-  .audit-footer {
-    display: flex;
-    gap: 12px;
-
-    .van-button {
-      flex: 1;
-    }
-  }
 }
 
 // 详情弹窗 - 饿了么风格

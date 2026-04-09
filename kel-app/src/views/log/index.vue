@@ -314,15 +314,15 @@ const logData = reactive({
     },
   ],
   plans: [
-    {
-      processName: '',
-      level1Process: '',
-      level2Process: '',
-      level3Process: '',
-      completionRate: '',
-      content: '',
-      progress: '',
-    },
+    // {
+    //   processName: '',
+    //   level1Process: '',
+    //   level2Process: '',
+    //   level3Process: '',
+    //   completionRate: '',
+    //   content: '',
+    //   progress: '',
+    // },
   ],
 });
 
@@ -332,7 +332,6 @@ watch(
     if (value[0]?.value) {
       logData.projectName = value[0].label;
       logData.projectCode = value[0].value;
-      fetchProcessTree();
     }
   },
   {
@@ -343,21 +342,6 @@ watch(
 
 // 提交中状态
 const submitting = ref(false);
-
-async function fetchProcessTree() {
-  try {
-    const { data: res } = await getProcessTree(
-      userStore.deptId,
-      // dayjs().format('YYYY-MM-DD')
-      '2026-06-01'
-    );
-    if (res.code === 200 && res.data) {
-      processCascaderOptions.value = transformProcessTree(res.data);
-    }
-  } catch (error) {
-    // 静默处理错误
-  }
-}
 
 function transformProcessTree(data, level = 0) {
   level += 1;
@@ -463,11 +447,6 @@ async function loadLogData(id) {
       logData.logNo = log.logNo;
       logData.logDate = log.logDate;
       logData.status = log.status;
-
-      // 获取工序树
-      if (log.projectCode) {
-        await fetchProcessTree();
-      }
 
       // 今日施工内容
       const todayList = res.data.todayList || [];

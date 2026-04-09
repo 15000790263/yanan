@@ -13,6 +13,15 @@ export const getLogList = query => {
       pageSize: 10,
       ...query,
     },
+    paramsSerializer: params => {
+      const searchParams = new URLSearchParams();
+      for (const key in params) {
+        if (params[key] !== undefined && params[key] !== null) {
+          searchParams.append(key, params[key]);
+        }
+      }
+      return searchParams.toString();
+    },
   });
 };
 

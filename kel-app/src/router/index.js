@@ -748,6 +748,21 @@ const router = createRouter({
         },
       ],
     },
+    {
+      /** 施工日志 **/
+      path: '/notice',
+      name: 'notice',
+      meta: { title: '施工日志', isBack: false },
+      component: () => import('../views/log/log-index.vue'),
+      children: [
+        {
+          path: 'index',
+          name: 'notice-index',
+          meta: { title: '施工日志', isBack: false },
+          component: () => import('../views/notice/index.vue'),
+        },
+      ],
+    },
   ],
 });
 
