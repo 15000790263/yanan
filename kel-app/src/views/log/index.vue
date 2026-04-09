@@ -375,7 +375,6 @@ async function fetchProjectInfo() {
       pageSize: 1,
     });
 
-    console.log(res);
     if (res.code === 200 && res.rows && res.rows.length > 0) {
       const schedule = res.rows[0];
       logData.projectCode = schedule.projectCode;
