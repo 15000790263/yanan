@@ -50,21 +50,43 @@
     </div>
 
     <!-- 详情内容 -->
-    <div v-if="showDetail && detailData.log" class="detail-section">
+    <div
+      v-if="showDetail && detailData.log"
+      class="detail-section"
+      :class="{ 'show-calendar': showCalendar }"
+    >
       <div class="detail-header">
         <h3>日志详情</h3>
       </div>
       <!-- 基本信息 -->
-      <div class="detail-block">
+      <div class="detail-block info-block">
         <h4>基本信息</h4>
-        <van-cell-group>
-          <van-cell title="项目名称" :value="detailData.log.projectName" />
-          <van-cell title="标段" :value="detailData.log.section" />
-          <van-cell title="记录人" :value="detailData.log.recorder" />
-          <van-cell title="记录日期" :value="detailData.log.logDate" />
-          <van-cell title="天气" :value="detailData.log.weather" />
-          <van-cell title="现场负责人" :value="detailData.log.onsiteLeader || '-'" />
-        </van-cell-group>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">项目名称</span>
+            <span class="info-value">{{ detailData.log.projectName || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">标段</span>
+            <span class="info-value">{{ detailData.log.section || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">记录人</span>
+            <span class="info-value">{{ detailData.log.recorderName || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">记录日期</span>
+            <span class="info-value">{{ detailData.log.logDate || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">天气</span>
+            <span class="info-value">{{ detailData.log.weather || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">现场负责人</span>
+            <span class="info-value">{{ detailData.log.onsiteLeader || '-' }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- 今日施工内容 -->
@@ -72,15 +94,49 @@
         <h4>今日施工内容</h4>
         <div class="process-list">
           <div v-for="(p, i) in detailData.todayList" :key="i" class="process-item">
-            <div class="process-name">{{ p.processNo }}</div>
-            <div class="process-content">{{ p.todayContent || '无' }}</div>
-            <div v-if="p.todayWorkload || p.totalWorkload" class="process-info">
-              <span v-if="p.todayWorkload">今日工作量: {{ p.todayWorkload }}</span>
-              <span v-if="p.totalWorkload">累计工作量: {{ p.totalWorkload }}</span>
+            <!-- 工序名称 -->
+            <div class="process-header">
+              <div class="process-name-row">
+                <span v-if="p.level3Process" class="process-name">{{ p.level3Process }}</span>
+                <span v-else-if="p.level2Process" class="process-name">{{ p.level2Process }}</span>
+                <span v-else-if="p.level1Process" class="process-name">{{ p.level1Process }}</span>
+                <span v-else class="process-name">{{
+                  p.processName || p.processNo || '工序' + (i + 1)
+                }}</span>
+                <span v-if="p.completionRate" class="process-rate">
+                  (完成进度 {{ p.completionRate }}%)
+                </span>
+              </div>
+              <span class="process-progress">{{ p.cumulativeProgress || 0 }}%</span>
             </div>
-            <div class="process-info">
-              <span>进度: {{ p.cumulativeProgress }}%</span>
-              <span v-if="p.problems" class="problem">问题: {{ p.problems }}</span>
+            <!-- 父级工序 -->
+            <div v-if="p.level1Process || p.level2Process" class="process-parent">
+              <span v-if="p.level1Process && p.level2Process"
+                >{{ p.level1Process }} / {{ p.level2Process }}</span
+              >
+              <span v-else-if="p.level1Process">{{ p.level1Process }}</span>
+            </div>
+            <!-- 施工内容 -->
+            <div class="process-content">{{ p.todayContent || '无' }}</div>
+            <!-- 工作量信息 -->
+            <div v-if="p.todayWorkload || p.totalWorkload" class="process-workload">
+              <div v-if="p.todayWorkload" class="workload-item">
+                <span class="label">今日工作量</span>
+                <span class="value">{{ p.todayWorkload }}</span>
+              </div>
+              <div v-if="p.totalWorkload" class="workload-item">
+                <span class="label">累计工作量</span>
+                <span class="value">{{ p.totalWorkload }}</span>
+              </div>
+            </div>
+            <!-- 进度信息 -->
+            <!-- <div class="process-info-row">
+              <span class="info-item">累计进度: {{ p.cumulativeProgress || 0 }}%</span>
+            </div> -->
+            <!-- 问题提示 -->
+            <div v-if="p.problems" class="process-problem">
+              <van-icon name="warning-o" size="14" />
+              <span>存在问题: {{ p.problems }}</span>
             </div>
             <!-- 附件图片 -->
             <div v-if="p.attachmentUrls?.length" class="attachment-images">
@@ -102,11 +158,31 @@
       <div v-if="detailData.tomorrowList?.length > 0" class="detail-block">
         <h4>明日施工计划</h4>
         <div class="plan-list">
-          <div v-for="(p, i) in detailData.tomorrowList" :key="i" class="plan-item">
-            <div class="plan-name">{{ p.processName }}</div>
-            <div class="plan-content">{{ p.tomorrowPlan || '无' }}</div>
-            <div class="plan-info">
-              <span>计划进度: {{ p.plannedProgress }}%</span>
+          <div v-for="(p, i) in detailData.tomorrowList" :key="i" class="process-item">
+            <!-- 工序名称 -->
+            <div class="process-header">
+              <div class="process-name-row">
+                <span v-if="p.level3Process" class="process-name">{{ p.level3Process }}</span>
+                <span v-else-if="p.level2Process" class="process-name">{{ p.level2Process }}</span>
+                <span v-else-if="p.level1Process" class="process-name">{{ p.level1Process }}</span>
+                <span v-else class="process-name">{{ p.processName || '工序' + (i + 1) }}</span>
+              </div>
+              <span v-if="p.plannedProgress" class="process-progress"
+                >{{ p.plannedProgress }}%</span
+              >
+            </div>
+            <!-- 父级工序 -->
+            <div v-if="p.level1Process || p.level2Process" class="process-parent">
+              <span v-if="p.level1Process && p.level2Process"
+                >{{ p.level1Process }} / {{ p.level2Process }}</span
+              >
+              <span v-else-if="p.level1Process">{{ p.level1Process }}</span>
+            </div>
+            <!-- 计划内容 -->
+            <div class="process-content">{{ p.tomorrowPlan || '无' }}</div>
+            <!-- 进度信息 -->
+            <div class="process-info-row">
+              <span class="info-item">计划进度: {{ p.plannedProgress || 0 }}%</span>
             </div>
           </div>
         </div>
@@ -305,7 +381,7 @@ async function fetchLogDetail(logId) {
 }
 
 // 跳转到今天
-function goToToday() {
+async function goToToday() {
   const today = dayjs();
   selectedDate.value = today.toDate();
   currentYear.value = today.year();
@@ -314,6 +390,19 @@ function goToToday() {
   // 跳转到今天所在的月份视图
   if (calendarRef.value) {
     calendarRef.value.move(today.toDate());
+  }
+
+  // 查询今天是否有填报日志
+  showDetail.value = true;
+  const todayStr = today.format('YYYY-MM-DD');
+  const todayLog = logList.value.find(log => log.logDate === todayStr);
+
+  if (todayLog && todayLog.id) {
+    await fetchLogDetail(todayLog.id);
+  } else {
+    detailData.log = null;
+    detailData.todayList = [];
+    detailData.tomorrowList = [];
   }
 }
 
@@ -496,7 +585,7 @@ function formatMonth(date) {
 @ele-text-gray: #999;
 
 .log-history {
-  min-height: calc(100vh - 46px - 50px);
+  height: calc(100vh - 46px);
   background: @ele-gray;
   padding-bottom: 20px;
 }
@@ -598,6 +687,12 @@ function formatMonth(date) {
 // 详情内容
 .detail-section {
   padding: 12px 16px;
+  height: calc(100% - 48px);
+  overflow-y: auto;
+
+  &.show-calendar {
+    height: calc(100% - 48px - 366px);
+  }
 
   .detail-header {
     margin-bottom: 12px;
@@ -615,6 +710,10 @@ function formatMonth(date) {
     padding: 16px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     h4 {
       font-size: 14px;
@@ -638,6 +737,49 @@ function formatMonth(date) {
           margin-bottom: 0;
         }
 
+        // 工序头部：名称 + 进度
+        .process-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 6px;
+
+          .process-name-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .process-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+          }
+
+          .process-rate {
+            font-size: 12px;
+            color: #666;
+          }
+
+          .process-progress {
+            font-size: 13px;
+            font-weight: 600;
+            color: #118ad2;
+            background: rgba(17, 138, 210, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+        }
+
+        // 父级工序
+        .process-parent {
+          font-size: 12px;
+          color: #999;
+          margin-bottom: 8px;
+          padding-left: 4px;
+        }
+
         .process-name,
         .plan-name {
           font-size: 14px;
@@ -651,7 +793,62 @@ function formatMonth(date) {
           font-size: 13px;
           color: #666;
           line-height: 1.5;
+          margin-bottom: 10px;
+          padding: 8px;
+          background: #fff;
+          border-radius: 4px;
+          border: 1px solid #eee;
+        }
+
+        // 工作量信息
+        .process-workload {
+          display: flex;
+          gap: 16px;
           margin-bottom: 8px;
+
+          .workload-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+
+            .label {
+              color: #999;
+            }
+
+            .value {
+              color: #07c160;
+              font-weight: 500;
+            }
+          }
+        }
+
+        // 进度信息行
+        .process-info-row {
+          display: flex;
+          gap: 12px;
+          font-size: 12px;
+          color: #118ad2;
+          margin-bottom: 8px;
+
+          .info-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+          }
+        }
+
+        // 问题提示
+        .process-problem {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          font-size: 12px;
+          color: #ee6666;
+          background: rgba(238, 102, 102, 0.1);
+          padding: 6px 10px;
+          border-radius: 4px;
+          margin-top: 8px;
         }
 
         .process-info,
@@ -661,6 +858,7 @@ function formatMonth(date) {
           display: flex;
           align-items: center;
           gap: 12px;
+          flex-wrap: wrap;
 
           .problem {
             color: #ee6666;
@@ -689,6 +887,43 @@ function formatMonth(date) {
       .van-cell__value {
         color: #333;
         font-size: 14px;
+      }
+    }
+
+    // 基本信息网格布局
+    &.info-block {
+      padding: 12px;
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 12px;
+        background: #f7f8fa;
+        border-radius: 6px;
+        min-width: 0;
+
+        .info-label {
+          font-size: 12px;
+          color: #999;
+        }
+
+        .info-value {
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       }
     }
   }

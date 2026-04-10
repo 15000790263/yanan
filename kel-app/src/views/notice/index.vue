@@ -135,7 +135,10 @@
         </div>
         <div class="detail-content">
           <!-- 图片轮播 -->
-          <div v-if="detailItem.imageList && detailItem.imageList.length > 0" class="detail-swipe-wrap">
+          <div
+            v-if="detailItem.imageList && detailItem.imageList.length > 0"
+            class="detail-swipe-wrap"
+          >
             <van-swipe class="detail-swipe" :loop="true" indicator-color="#fff">
               <van-swipe-item v-for="(img, idx) in detailItem.imageList" :key="idx">
                 <img :src="img" @click="previewImage(detailItem.imageList, idx)" alt="" />
@@ -146,7 +149,12 @@
           <h2 class="detail-title">{{ detailItem.title }}</h2>
           <!-- 信息标签 -->
           <div class="detail-info">
-            <span v-if="activeTab === 'notice'" class="detail-type" :class="'type-' + detailItem.type">{{ getTypeLabel(detailItem.type) }}</span>
+            <span
+              v-if="activeTab === 'notice'"
+              class="detail-type"
+              :class="'type-' + detailItem.type"
+              >{{ getTypeLabel(detailItem.type) }}</span
+            >
             <span class="detail-time">{{ detailItem.time }}</span>
           </div>
           <!-- 内容 -->

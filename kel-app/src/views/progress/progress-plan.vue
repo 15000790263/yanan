@@ -12,27 +12,43 @@
       </div>
       <div
         class="stats-card"
-        :class="{ active: activeStatus === '0' }"
-        @click="handleStatusChange('0')"
-      >
-        <div class="stats-value pending">{{ stats.pending }}</div>
-        <div class="stats-label">未开始</div>
-      </div>
-      <div
-        class="stats-card"
         :class="{ active: activeStatus === '1' }"
         @click="handleStatusChange('1')"
       >
-        <div class="stats-value">{{ stats.inProgress }}</div>
-        <div class="stats-label">进行中</div>
+        <div class="stats-value pending">{{ stats.status1 }}</div>
+        <div class="stats-label">未开始</div>
       </div>
       <div
         class="stats-card"
         :class="{ active: activeStatus === '2' }"
         @click="handleStatusChange('2')"
       >
-        <div class="stats-value completed">{{ stats.completed }}</div>
-        <div class="stats-label">已完成</div>
+        <div class="stats-value delayed">{{ stats.status2 }}</div>
+        <div class="stats-label">延期未开始</div>
+      </div>
+      <div
+        class="stats-card"
+        :class="{ active: activeStatus === '3' }"
+        @click="handleStatusChange('3')"
+      >
+        <div class="stats-value in-progress">{{ stats.status3 }}</div>
+        <div class="stats-label">进行中</div>
+      </div>
+      <div
+        class="stats-card"
+        :class="{ active: activeStatus === '4' }"
+        @click="handleStatusChange('4')"
+      >
+        <div class="stats-value completed">{{ stats.status4 }}</div>
+        <div class="stats-label">正常完成</div>
+      </div>
+      <div
+        class="stats-card"
+        :class="{ active: activeStatus === '5' }"
+        @click="handleStatusChange('5')"
+      >
+        <div class="stats-value delayed-complete">{{ stats.status5 }}</div>
+        <div class="stats-label">延期完成</div>
       </div>
     </div>
 
@@ -52,7 +68,6 @@
             @click="handleViewDetail(item)"
           >
             <div class="card-header">
-              <div class="process-name">{{ item.processNo }}</div>
               <van-tag :type="statusTagType[item.status]" size="small">{{
                 statusLabel[item.status]
               }}</van-tag>
@@ -68,10 +83,7 @@
               </div>
               <div class="info-row">
                 <span class="label">工序：</span>
-                <span class="value"
-                  >{{ item.level1Process }} / {{ item.level2Process }} /
-                  {{ item.level3Process }}</span
-                >
+                <span class="value">{{ formatProcess(item) }}</span>
               </div>
               <div class="info-row">
                 <span class="label">计划：</span>
@@ -100,11 +112,8 @@
           <van-cell-group>
             <van-cell title="项目名称" :value="detailData.projectName" />
             <van-cell title="标段" :value="detailData.section" />
-            <van-cell title="工序编号" :value="detailData.processNo" />
-            <van-cell
-              title="工序"
-              :value="`${detailData.level1Process} / ${detailData.level2Process} / ${detailData.level3Process}`"
-            />
+            <van-cell title="工序编号" :value="detailData.processNo || '-'" />
+            <van-cell title="工序" :value="formatProcess(detailData)" />
             <van-cell title="计划开始" :value="detailData.plannedStartDate || '-'" />
             <van-cell title="计划结束" :value="detailData.plannedEndDate || '-'" />
             <van-cell title="实际开始" :value="detailData.actualStartDate || '-'" />
@@ -152,15 +161,17 @@ defineOptions({
 // 统计
 const stats = reactive({
   all: 0,
-  pending: 0,
-  inProgress: 0,
-  completed: 0,
+  status1: 0,
+  status2: 0,
+  status3: 0,
+  status4: 0,
+  status5: 0,
 });
 
 // 状态
 const activeStatus = ref('');
-const statusLabel = { 0: '未开始', 1: '进行中', 2: '已完成' };
-const statusTagType = { 0: 'default', 1: 'warning', 2: 'success' };
+const statusLabel = { 1: '未开始', 2: '延期未开始', 3: '进行中', 4: '正常完成', 5: '延期完成' };
+const statusTagType = { 1: 'default', 2: 'danger', 3: 'warning', 4: 'success', 5: 'danger' };
 
 // 列表数据
 const scheduleList = ref([]);
@@ -175,6 +186,15 @@ const showDetail = ref(false);
 const detailData = ref(null);
 const attachmentUrls = ref([]);
 
+// 格式化工序显示
+function formatProcess(data) {
+  const parts = [];
+  if (data.level1Process) parts.push(data.level1Process);
+  if (data.level2Process) parts.push(data.level2Process);
+  if (data.level3Process) parts.push(data.level3Process);
+  return parts.length > 0 ? parts.join(' / ') : '-';
+}
+
 // 获取统计
 async function fetchStats() {
   try {
@@ -182,9 +202,11 @@ async function fetchStats() {
     if (res.code === 200 && res.data) {
       const d = res.data;
       stats.all = d.total || 0;
-      stats.pending = d.status0 || 0;
-      stats.inProgress = d.status1 || 0;
-      stats.completed = d.status2 || 0;
+      stats.status1 = d.status1 || 0;
+      stats.status2 = d.status2 || 0;
+      stats.status3 = d.status3 || 0;
+      stats.status4 = d.status4 || 0;
+      stats.status5 = d.status5 || 0;
     }
   } catch (error) {
     // ignore
@@ -285,7 +307,7 @@ async function handleViewDetail(item) {
 
 <style scoped lang="less">
 .progress-plan {
-  min-height: calc(100vh - 46px - 50px);
+  height: calc(100vh - 46px);
   background: #f5f5f5;
 }
 
@@ -330,14 +352,28 @@ async function handleViewDetail(item) {
     color: #999;
   }
 
+  .in-progress {
+    color: #ff9800;
+  }
+
+  .delayed {
+    color: #f44;
+  }
+
   .completed {
     color: #07c160;
+  }
+
+  .delayed-complete {
+    color: #f44;
   }
 }
 
 // 列表
 .list-section {
   padding: 12px 16px;
+  height: calc(100% - 136px);
+  overflow-y: auto;
 }
 
 .schedule-card {

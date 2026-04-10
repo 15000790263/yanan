@@ -104,6 +104,7 @@ export default defineConfig({
         // target: 'http://60.13.219.226:30808',
         // target: 'http://60.13.219.226:30453',
         // target: 'http://192.168.31.143:8080',
+        // target: 'http://192.168.31.19:8080',
         target: 'http://192.168.31.19:8080',
         // target: 'http://111.21.190.118:10039',
         // target: 'https://192.168.0.150:30443/',

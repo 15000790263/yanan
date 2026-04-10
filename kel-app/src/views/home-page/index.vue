@@ -4,8 +4,8 @@
       <HeroHeader />
       <div class="content-bg">
         <div class="sections-rail">
-          <ProgressSection />
-          <div class="section-gap"></div>
+          <!-- <ProgressSection /> -->
+          <!-- <div class="section-gap"></div> -->
           <SmartBuildSection />
         </div>
       </div>
