@@ -26,6 +26,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import emitter from '../utils/event-bus';
 import { useTitle } from '@/hooks/use-title';
+import { checkUpdate } from '../utils/check-update';
 
 const { titleStoreData } = useTitle();
 
@@ -51,10 +52,21 @@ const mainMenu = [
   },
 ];
 
+function onDeviceReady() {
+  // 检查更新
+  checkUpdate();
+}
+
 onMounted(() => {
   // 默认加载首页和个人中心 tabbar
   menu.value = mainMenu;
   active.value = 'home';
+
+  document.addEventListener('deviceready', onDeviceReady, false);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('deviceready', onDeviceReady);
 });
 
 function onChange(data) {

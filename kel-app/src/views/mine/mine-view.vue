@@ -26,7 +26,7 @@
 
     <!-- 版本信息 -->
     <div class="mine-version">
-      <span>APP版本：v{{ appVersion }}</span>
+      <!-- <span>APP版本：v{{ appVersion }}</span> -->
     </div>
 
     <!-- 个人资料弹窗 -->

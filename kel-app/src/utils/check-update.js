@@ -9,7 +9,7 @@ import axios from 'axios';
 import { clearToken } from './session';
 
 export async function checkUpdate() {
-  const url = `${config.fileUrl}/statics/appInfo.json`;
+  const url = `${config.updateFileUrl}/app/appInfo.json`;
   const res = await fetch(url, {
     cache: 'no-store',
   });
@@ -30,7 +30,7 @@ export async function checkUpdate() {
             ])
           : '新版本App已发布，是否现在升级？',
         className: 'update-app-dialog',
-        showCancelButton: false,
+        showCancelButton: true,
         closeOnPopstate: false,
       })
         .then(() => {
@@ -46,7 +46,7 @@ export async function checkUpdate() {
 }
 
 export async function downloadFile() {
-  const fileUrl = 'http://60.13.219.226:30453/statics/库尔勒智慧燃气.apk'; // 替换为你的文件URL
+  const fileUrl = `${config.updateFileUrl}/app/延长石油.apk`; // 替换为你的文件URL
   // const fileUrl = 'http://localhost:5173//statics/库尔勒智慧燃气.apk'; // 替换为你的文件URL
 
   showDialog({
@@ -97,7 +97,7 @@ export async function downloadFile() {
     },
   });
 
-  const res2 = await saveFile(res.data, '库尔勒智慧燃气.apk');
+  const res2 = await saveFile(res.data, '延长石油.apk');
   closeDialog();
 
   if (res2) {
