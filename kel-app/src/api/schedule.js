@@ -32,3 +32,11 @@ export const getScheduleDetail = (id) => {
 export const getScheduleStats = () => {
   return service.get(`${config.url}/business/schedule/stats`);
 };
+
+/**
+ * 获取进度计划进度统计：总体进度百分比、一标段进度、二标段进度、三标段进度
+ * @returns {Promise}
+ */
+export const getScheduleProgress = () => {
+  return service.get(`${config.url}/business/schedule/progress`);
+};

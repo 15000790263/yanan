@@ -1,17 +1,37 @@
 <script setup>
 import { Progress } from 'vant';
 import 'vant/lib/progress/style';
+import { ref, onMounted } from 'vue';
+import { getScheduleProgress } from '@/api/schedule';
 
 // 图片资源路径
 const progressTitleIcon = new URL('@/assets/image/home/smart-title-icon.png', import.meta.url).href;
 
 // 标段进度数据
-const mainProgress = 17;
-const subSections = [
-  { name: '一标段', progress: 21, color: 'linear-gradient(90deg, #2C5DFF 0%, #3BE5FF 102%)' },
-  { name: '二标段', progress: 15, color: 'linear-gradient(270deg, #FF3731 0%, #FF6D3D 100%)' },
-  { name: '三标段', progress: 12, color: 'linear-gradient(90deg, #FFF531 0%, #FFA83D 99%)' },
-];
+const mainProgress = ref(0);
+const subSections = ref([
+  { name: '一标段', progress: 0, color: 'linear-gradient(90deg, #2C5DFF 0%, #3BE5FF 102%)' },
+  { name: '二标段', progress: 0, color: 'linear-gradient(270deg, #FF3731 0%, #FF6D3D 100%)' },
+  { name: '三标段', progress: 0, color: 'linear-gradient(90deg, #FFF531 0%, #FFA83D 99%)' },
+]);
+
+// 获取进度数据
+const fetchProgress = async () => {
+  try {
+    const res = await getScheduleProgress();
+    const data = res.data.data;
+    mainProgress.value = Math.round(data.overallProgress);
+    subSections.value[0].progress = Math.round(data.section1Progress);
+    subSections.value[1].progress = Math.round(data.section2Progress);
+    subSections.value[2].progress = Math.round(data.section3Progress);
+  } catch (error) {
+    console.error('获取进度数据失败:', error);
+  }
+};
+
+onMounted(() => {
+  fetchProgress();
+});
 </script>
 
 <template>
