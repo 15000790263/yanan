@@ -900,7 +900,7 @@ async function handleSubmit() {
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1;
 
   .header-info {
     .page-date {
