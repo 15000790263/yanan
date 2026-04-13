@@ -7,8 +7,6 @@ export function useTitle() {
   const titleStoreData = titleStore();
   const themeStoreData = themeStore();
 
-  console.log(router.currentRoute);
-
   watch(
     () => router.currentRoute,
     () => {

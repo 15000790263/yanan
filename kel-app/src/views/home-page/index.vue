@@ -18,6 +18,11 @@ import HeroHeader from './components/HeroHeader.vue';
 import ProgressSection from './components/ProgressSection.vue';
 import SmartBuildSection from './components/SmartBuildSection.vue';
 import BottomNav from './components/BottomNav.vue';
+
+defineOptions({
+  name: 'HomePage',
+});
+
 </script>
 
 <style scoped>

@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import emitter from '../utils/event-bus';
 import { useTitle } from '@/hooks/use-title';

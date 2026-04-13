@@ -766,4 +766,42 @@ const router = createRouter({
   ],
 });
 
+// 路由方向：'forward' | 'back' | 'replace'
+// 用 ref 让 Vue 能追踪方向值的变化
+import { ref } from 'vue';
+const routeDirection = ref('forward');
+export { routeDirection };
+
+// 保存原始方法
+const _back = router.back.bind(router);
+const _go = router.go.bind(router);
+const _push = router.push.bind(router);
+const _replace = router.replace.bind(router);
+
+// 重写 back：标记返回方向后调用原方法
+router.back = (...args) => {
+  routeDirection.value = 'back';
+  return _back(...args);
+};
+
+// 重写 go：负数参数视为返回
+router.go = delta => {
+  if (typeof delta === 'number' && delta < 0) {
+    routeDirection.value = 'back';
+  }
+  return _go(delta);
+};
+
+// 重写 push：标记前进方向
+router.push = (...args) => {
+  routeDirection.value = 'forward';
+  return _push(...args);
+};
+
+// 重写 replace：tab 切换等原地替换，不需要动画
+router.replace = (...args) => {
+  routeDirection.value = 'none';
+  return _replace(...args);
+};
+
 export default router;

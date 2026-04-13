@@ -5,12 +5,16 @@
     :theme-vars="themeVars"
     :theme-vars-dark="themeVarsDark"
   >
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <Transition :name="transitionName">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
   </van-config-provider>
 </template>
 
 <script setup lang="jsx">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
 import cssVars from '@/style/vant-css-vars';
 import cssVarsDark from '@/style/vant-css-vars-dark';
 import { themeStore } from '@/stores/theme';
@@ -22,6 +26,7 @@ import config from './config';
 import { systemStore } from '@/stores/system';
 import { shouldRedirectToLogin } from './utils/shouldRedirectToLogin';
 import { throttle } from 'lodash';
+import { routeDirection } from './router';
 
 const useSystem = systemStore();
 
@@ -32,6 +37,11 @@ const themeVarsDark = ref(cssVarsDark);
 
 const route = useRoute();
 const router = useRouter();
+
+const transitionName = computed(() => {
+  if (routeDirection.value === 'none') return '';
+  return routeDirection.value === 'back' ? 'slide-right' : 'slide-left';
+});
 
 function onResume() {
   const is = shouldRedirectToLogin();
@@ -207,4 +217,71 @@ const delayTime = ref(4);
 // }
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 路由页面容器——相对定位，作为 absolute 子页面的参照 */
+.config-provider {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 前进：新页从右滑入覆盖，旧页向左滑出 */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.slide-left-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-left-enter-to {
+  transform: translateX(0);
+}
+
+.slide-left-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-left-leave-to {
+  transform: translateX(-25%);
+  opacity: 0.8;
+}
+
+/* 后退：旧页向右滑出，新页从左滑入覆盖 */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.slide-right-enter-from {
+  transform: translateX(-25%);
+  opacity: 0.8;
+}
+
+.slide-right-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-right-leave-from {
+  transform: translateX(0);
+}
+
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 1;
+}
+</style>
